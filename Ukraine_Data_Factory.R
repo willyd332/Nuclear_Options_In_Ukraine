@@ -16,7 +16,7 @@ pro_warfare_bias <- c(1,1,0,0,0)
 anti_warfare_bias <- c(-1,-1,0,0,0)
 
 # Generate Data
-treatment = sample(c(1,2), sample_size, replace=TRUE)
+treatment = sample(c(0,1), sample_size, replace=TRUE)
 
 # 1 is anti, 2 is neutral, 3 is pro
 russian_control = sample(c(1,2,3), sample_size, replace=TRUE)
@@ -69,6 +69,8 @@ treated_df <- biased_df %>%
 
 treated_df
 
+# Export To CSV
+# write.csv(treated_df,"./Dummy_Data_1.csv", row.names = FALSE)
 
 
 

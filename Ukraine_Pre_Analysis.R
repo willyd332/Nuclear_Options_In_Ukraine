@@ -37,6 +37,13 @@ economic_wr_model = lm(treatment ~ economic + warfare + russia, data=data)
 political_wr_model = lm(treatment ~ political + warfare + russia, data=data)
 general_wr_model = lm(treatment ~ general + warfare + russia, data=data)
 
+
+print(summary(direct_wr_model), digits=3)
+print(summary(indirect_wr_model), digits=3)
+print(summary(economic_wr_model), digits=3)
+print(summary(political_wr_model), digits=3)
+print(summary(general_wr_model), digits=3)
+
 # Calculate Significance
 
 

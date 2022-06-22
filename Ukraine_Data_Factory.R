@@ -75,7 +75,8 @@ treated_df <- biased_df %>%
     TRUE ~ .
   )))
 
-treated_df
+apply(treated_df, 2, sd, na.rm = TRUE)
+summary(treated_df)
 
 # Export To CSV
 write.csv(treated_df,"./Dummy_Data_1.csv", row.names = FALSE)

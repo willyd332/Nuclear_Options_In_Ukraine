@@ -21,17 +21,12 @@ alpha <- ALPHA # Standard significance level
 sims <- 500 # Number of simulations to conduct for each N 
 #### Outer loop to vary the number of subjects #### 
 for (j in 1:length(possible.ns)){
-  N <- possible.ns[j] # Pick the jth value for N 
-  Y0 <- rnorm(n=N, mean=AVERAGE_OUTCOME, sd=STANDARD_DEVIATION) # control potential outcome 
-  tau <- TREATMENT_EFFECT_SIZE # Hypothesize treatment effect 
-  Y1 <- Y0 + tau # treatment potential outcome                                   
   significant.experiments <- rep(NA, sims) # Empty object to count significant experiments 
-  
   #### Inner loop to conduct experiments "sims" times over for each N #### 
-  Y0 <- rnorm(n=N, mean=AVERAGE_OUTCOME, sd=STANDARD_DEVIATION) # control potential outcome 
-  tau <- TREATMENT_EFFECT_SIZE # Hypothesize treatment effect 
-  Y1 <- Y0 + tau # treatment potential outcome 
     for (i in 1:sims){ 
+      Y0 <- rnorm(n=N, mean=AVERAGE_OUTCOME, sd=STANDARD_DEVIATION) # control potential outcome 
+      tau <- TREATMENT_EFFECT_SIZE # Hypothesize treatment effect 
+      Y1 <- Y0 + tau # treatment potential outcome 
       ## Z.sim <- rbinom(n=N, size=1, prob=.5) # Do a random assignment  by coin flip
       Z.sim <- sample(rep(c(0,1),N/2)) ## Do a random assignment ensuring equal sized groups
       Y.sim <- Y1*Z.sim + Y0*(1-Z.sim) # Reveal outcomes according to assignment 

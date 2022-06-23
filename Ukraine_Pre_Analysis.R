@@ -17,6 +17,9 @@ library(texreg)
 # Get the data
 data <- read.csv('./Dummy_Data_1.csv')
 
+control_group <- data[data$Z == 0,]
+treatment_group <- data[data$Z == 1,]
+
 print("Control Group Summary")
 summary(control_group)
 print("Control Group Summary")

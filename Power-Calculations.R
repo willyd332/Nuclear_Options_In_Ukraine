@@ -1,27 +1,20 @@
 # Power Calculations
 # https://egap.org/resource/10-things-to-know-about-statistical-power/
+# https://egap.org/resource/script-power-analysis-simulations-in-r/
+library(randomizr)  
+
 
 # KEY ASSUMPTIONS
 COST_PER_RESPONSE = 0.80 # Based on GA minimum wage for a 5 minute survey + 20 Cents
-ALPHA = 0.01
+MAX_N = 1000/COST_PER_RESPONSE
+ALPHA = 0.05
 TREATMENT_EFFECT_SIZE = 0.26
 TARGET_POWER = 0.8
 AVERAGE_OUTCOME = 1.84548
 STANDARD_DEVIATION = 1.112738
 
-# helpers
-make_even <- function(x){
-  if(x %% 2 != 0){
-    x <- x + 1
-  }
-  return(x)
-}
-
 # RUNNING SIMULATED EXPERIMENTS
-# possible.ns <- seq(from=100, to=2000, by=100) # The sample sizes we'll be considering
-possible.ns <- seq(from=100, to=2000, by=100) * 0.66
-possible.ns <- modify(possible.ns, make_even)
-possible.ns
+possible.ns <- seq(from=100, to=MAX_N, by=100) # The sample sizes we'll be considering
 stopifnot(all( (possible.ns %% 2)==0 )) # require even number of experimental pool
 powers <- rep(NA, length(possible.ns)) # Empty object to collect simulation estimates 
 alpha <- ALPHA # Standard significance level 
@@ -29,8 +22,8 @@ sims <- 500 # Number of simulations to conduct for each N
 #### Outer loop to vary the number of subjects #### 
 for (j in 1:length(possible.ns)){
   N <- possible.ns[j] # Pick the jth value for N 
-  Y0 <- rnorm(n=N, mean=60, sd=20) # control potential outcome 
-  tau <- 5 # Hypothesize treatment effect 
+  Y0 <- rnorm(n=N, mean=AVERAGE_OUTCOME, sd=STANDARD_DEVIATION) # control potential outcome 
+  tau <- TREATMENT_EFFECT_SIZE # Hypothesize treatment effect 
   Y1 <- Y0 + tau # treatment potential outcome                                   
   significant.experiments <- rep(NA, sims) # Empty object to count significant experiments 
   
@@ -49,14 +42,67 @@ for (j in 1:length(possible.ns)){
   powers[j] <- mean(significant.experiments) # store average success rate (power) for each N 
 } 
 
-powers_df = data.frame(
+single_treatment_powers_df = data.frame(
   sample_size = possible.ns,
   power = powers,
   cost = possible.ns * COST_PER_RESPONSE
   )
 
-powers_df
+single_treatment_powers_df
 
+
+# MULTIPLE ARMS POWER ANALYSIS
+power.atleastone <- rep(NA, length(possible.ns))
+power.bothtreatments <- rep(NA, length(possible.ns))
+power.fullranking <- rep(NA, length(possible.ns))
+alpha <- ALPHA  #(one-tailed test at .05 level)
+sims <- 300
+#### Outer loop to vary the number of subjects ####
+for (j in 1:length(possible.ns)){
+  N <- possible.ns[j]
+  # P-Values and Coefficient Containers
+  p.T1vsC <- rep(NA, sims) # Treatment 1 vs Control 
+  p.T2vsC <- rep(NA, sims) # Treatment 2 vs Control
+  p.T2vsT1 <- rep(NA, sims) # etc...
+  c.T1vsC <- rep(NA, sims)
+  c.T2vsC <- rep(NA, sims)
+  c.T2vsT1 <- rep(NA, sims)
+  #### Inner loop to conduct experiments "sims" times over for each N ####
+  for (i in 1:sims){
+    Y0 <-  rnorm(n=N, mean=AVERAGE_OUTCOME, sd=STANDARD_DEVIATION)
+    tau_1 <- TREATMENT_EFFECT_SIZE
+    tau_2 <- TREATMENT_EFFECT_SIZE
+    Y1 <- Y0 + tau_1
+    Y2 <- Y0 + tau_2
+    Z.sim <- complete_ra(N=N, num_arms=3)
+    Y.sim <- Y0*(Z.sim=="T3") + Y1*(Z.sim=="T1") + Y2*(Z.sim=="T2")
+    frame.sim <- data.frame(Y.sim, Z.sim)
+    fit.T1vsC.sim <- lm(Y.sim ~ Z.sim=="T1", data=subset(frame.sim, Z.sim!="T2"))
+    fit.T2vsC.sim <- lm(Y.sim ~ Z.sim=="T2", data=subset(frame.sim, Z.sim!="T1"))
+    fit.T2vsT1.sim <- lm(Y.sim ~ Z.sim=="T2", data=subset(frame.sim, Z.sim!="T3"))
+    
+    ### Need to capture coefficients and pvalues (one-tailed tests, so signs are important)
+    c.T1vsC[i] <- summary(fit.T1vsC.sim)$coefficients[2,1]
+    c.T2vsC[i] <- summary(fit.T2vsC.sim)$coefficients[2,1]
+    c.T2vsT1[i] <- summary(fit.T2vsT1.sim)$coefficients[2,1]
+    p.T1vsC[i] <- summary(fit.T1vsC.sim)$coefficients[2,4]
+    p.T2vsC[i] <- summary(fit.T2vsC.sim)$coefficients[2,4]
+    p.T2vsT1[i] <- summary(fit.T2vsT1.sim)$coefficients[2,4]
+  }
+  power.atleastone[j] <- mean(c.T1vsC>0 & c.T2vsC>0 & (p.T1vsC < alpha/2 | p.T2vsC < alpha/2))
+  power.bothtreatments[j] <- mean(c.T1vsC>0 & c.T2vsC>0 & p.T1vsC < alpha/2 & p.T2vsC < alpha/2)
+  power.fullranking[j] <- mean(c.T1vsC>0 & c.T2vsC>0 & c.T2vsT1 > 0 & p.T1vsC < alpha/2 & p.T2vsT1 < alpha/2)
+}
+
+multiple_treatment_powers_df = data.frame(
+  sample_size = possible.ns,
+  power.atleastone = power.atleastone,
+  power.bothtreatments = power.bothtreatments,
+  power.fullranking = power.fullranking,
+  cost = possible.ns * COST_PER_RESPONSE
+)
+
+multiple_treatment_powers_df
 
 
 # Kertzer & Zeitoff (2017) FOR ASSUMPTIONS:
@@ -146,8 +192,6 @@ powers_df
     # 0.065
     assumed_effect <- mean_effect * 4 # scale of 0-1 converted to 0-4
     assumed_effect # 0.26
-    
-    
     
     
     

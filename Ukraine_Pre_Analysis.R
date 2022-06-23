@@ -15,15 +15,18 @@ library(estimatr)
 library(texreg)
 
 # Get the data
-data <- read.csv('./Dummy_Data_1.csv')
+data <- read.csv('./Dummy_Data_Multi_Arm.csv')
 
 control_group <- data[data$Z == 0,]
-treatment_group <- data[data$Z == 1,]
+treatment1_group <- data[data$Z == 1,]
+treatment2_group <- data[data$Z == 2,]
 
 print("Control Group Summary")
 summary(control_group)
-print("Control Group Summary")
-summary(treatment_group)
+print("Treatment 1 Group Summary")
+summary(treatment1_group)
+print("Treatment 2 Group Summary")
+summary(treatment2_group)
 
 # (Model 1) Regression without controls...
 direct_model_1 <- 

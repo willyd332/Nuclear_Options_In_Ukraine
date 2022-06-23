@@ -2,12 +2,20 @@
 library(dplyr)
 library(tidyverse)
 
+# KEY ASSUMPTIONS
+ALPHA = 0.05
+TREATMENT_EFFECT_SIZE = 0.26
+TARGET_POWER = 0.8
+AVERAGE_OUTCOME = 1.84548
+STANDARD_DEVIATION = 1.112738
+
 # General Variables
 sample_size <- 1000
 
 # Set Treatment Biases
 # ("DIRECT", "INDIRECT", "ECONOMIC", "POLITICAL", "GENERAL")
-treatment_bias <- c(-1, 1, 1, 1, -1)
+te <- TREATMENT_EFFECT_SIZE
+treatment_bias <- c(-te, te, te, te, -te)
 
 # Set Control Biases
 pro_russia_bias <- c(-1, -1, -1, -1, -1)
@@ -16,7 +24,7 @@ pro_warfare_bias <- c(1, 1, 0, 0, 0)
 anti_warfare_bias <- c(-1, -1, 0, 0, 0)
 
 # Generate Data
-treatment <- sample(c(0, 1), sample_size, replace = TRUE)
+treatment <- sample(c(0, 1, 2), sample_size, replace = TRUE)
 
 # 1 is anti, 2 is neutral, 3 is pro
 russian_control <- sample(c(1, 2, 3), sample_size, replace = TRUE)
@@ -61,14 +69,38 @@ biased_df <- ubiased_df %>%
 
 biased_df
 
-
 # Create the treated DF
 treated_df <- biased_df %>%
-  transform(direct = direct - Z) %>%
-  transform(indirect = indirect + Z) %>%
-  transform(economic = economic + Z) %>%
-  transform(political = political + Z) %>%
-  transform(general = general - Z) %>%
+  transform(direct = case_when(
+      Z == 0 ~ direct,   
+      Z == 1 ~ direct - TREATMENT_EFFECT_SIZE,
+      Z == 2 ~ direct + TREATMENT_EFFECT_SIZE
+    )
+  ) %>%
+  transform(indirect = case_when(
+      Z == 0 ~ indirect,
+      Z == 1 ~ indirect + TREATMENT_EFFECT_SIZE,
+      Z == 2 ~ indirect - TREATMENT_EFFECT_SIZE
+    )
+  ) %>%
+  transform(economic = case_when(
+      Z == 0 ~ economic,
+      Z == 1 ~ economic + TREATMENT_EFFECT_SIZE,
+      Z == 2 ~ economic - TREATMENT_EFFECT_SIZE
+    )
+  ) %>%
+  transform(political = case_when(
+      Z == 0 ~ political,
+      Z == 1 ~ political + TREATMENT_EFFECT_SIZE,
+      Z == 2 ~ political - TREATMENT_EFFECT_SIZE
+    )
+  ) %>%
+  transform(general = case_when(
+      Z == 0 ~ general,
+      Z == 1 ~ general - TREATMENT_EFFECT_SIZE,
+      Z == 2 ~ general + TREATMENT_EFFECT_SIZE
+    )
+  ) %>%
   mutate(across(direct:general, ~ case_when(
     . > 4 ~ 4,
     . < 0 ~ 0,
@@ -77,6 +109,6 @@ treated_df <- biased_df %>%
 
 apply(treated_df, 2, sd, na.rm = TRUE)
 summary(treated_df)
-
+treated_df
 # Export To CSV
-write.csv(treated_df,"./Dummy_Data_1.csv", row.names = FALSE)
+write.csv(treated_df,"./Dummy_Data_Multi_Arm.csv", row.names = FALSE)

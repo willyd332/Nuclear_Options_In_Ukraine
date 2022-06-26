@@ -1,27 +1,31 @@
 
-\begin{table}[t]
+\begin{sidewaystable}[t]
 \caption{GENERAL DEGREE OF RESPONSE}
 \begin{center}
-\begin{tabular}{l D{.}{.}{4.7} D{.}{.}{4.7}}
+\scalebox{0.85}{
+\begin{tabular}{l D{.}{.}{4.7} D{.}{.}{4.7} D{.}{.}{4.7} D{.}{.}{4.7} D{.}{.}{4.7} D{.}{.}{4.7} D{.}{.}{4.7} D{.}{.}{4.7}}
 \toprule
- & \multicolumn{1}{c}{Model 1} & \multicolumn{1}{c}{Model 2} \\
+ & \multicolumn{1}{c}{Model 1} & \multicolumn{1}{c}{Model 2} & \multicolumn{1}{c}{Model 3} & \multicolumn{1}{c}{Model 4} & \multicolumn{1}{c}{Model 5} & \multicolumn{1}{c}{Model 6} & \multicolumn{1}{c}{Model 7} & \multicolumn{1}{c}{Model 8} \\
 \midrule
-Treatment             & -0.7090^{***} & -0.6580^{***} \\
-                      & (0.0852)      & (0.0764)      \\
-+ Opinions On Warfare &               & -0.0045       \\
-                      &               & (0.0458)      \\
-+ Opinions On Russia  &               & -0.7627^{***} \\
-                      &               & (0.0452)      \\
-Intercept             & 1.9294^{***}  & 3.4597^{***}  \\
-                      & (0.0629)      & (0.1433)      \\
+Z                     & -0.1439      & -0.1510       &              &               &              &               &              &               \\
+                      & (0.0940)     & (0.0835)      &              &               &              &               &              &               \\
+Treatment             &              &               & -0.0989      & -0.1078^{*}   & -0.0989      & -0.1078^{*}   & -0.0989      & -0.1078^{*}   \\
+                      &              &               & (0.0540)     & (0.0471)      & (0.0540)     & (0.0471)      & (0.0540)     & (0.0471)      \\
++ Opinions On Warfare &              & 0.0517        &              & 0.0513        &              & 0.0513        &              & 0.0513        \\
+                      &              & (0.0480)      &              & (0.0480)      &              & (0.0480)      &              & (0.0480)      \\
++ Opinions On Russia  &              & -0.8080^{***} &              & -0.8088^{***} &              & -0.8088^{***} &              & -0.8088^{***} \\
+                      &              & (0.0443)      &              & (0.0443)      &              & (0.0443)      &              & (0.0443)      \\
+Intercept             & 2.0116^{***} & 3.5270^{***}  & 2.0147^{***} & 3.5367^{***}  & 2.0147^{***} & 3.5367^{***}  & 2.0147^{***} & 3.5367^{***}  \\
+                      & (0.0771)     & (0.1550)      & (0.0703)     & (0.1524)      & (0.0703)     & (0.1524)      & (0.0703)     & (0.1524)      \\
 \midrule
-R$^2$                 & 0.0646        & 0.2644        \\
-Adj. R$^2$            & 0.0637        & 0.2621        \\
-Num. obs.             & 1000          & 1000          \\
-RMSE                  & 1.3496        & 1.1980        \\
+R$^2$                 & 0.0024       & 0.2285        & 0.0034       & 0.2299        & 0.0034       & 0.2299        & 0.0034       & 0.2299        \\
+Adj. R$^2$            & 0.0014       & 0.2262        & 0.0024       & 0.2276        & 0.0024       & 0.2276        & 0.0024       & 0.2276        \\
+Num. obs.             & 1000         & 1000          & 1000         & 1000          & 1000         & 1000          & 1000         & 1000          \\
+RMSE                  & 1.3957       & 1.2287        & 1.3951       & 1.2276        & 1.3951       & 1.2276        & 1.3951       & 1.2276        \\
 \bottomrule
-\multicolumn{3}{l}{\scriptsize{$^{***}p<0.001$; $^{**}p<0.01$; $^{*}p<0.05$. Robust standard errors are in parentheses.}}
+\multicolumn{9}{l}{\scriptsize{$^{***}p<0.001$; $^{**}p<0.01$; $^{*}p<0.05$. Robust standard errors are in parentheses.}}
 \end{tabular}
+}
 \label{table:coefficients}
 \end{center}
-\end{table}
+\end{sidewaystable}

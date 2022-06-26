@@ -9,15 +9,14 @@ options(xtable.timestamp = "")
 
 # KEY ASSUMPTIONS
 COST_PER_RESPONSE = (7.25/12)*1.2 # (Hourly Minimum Wage/Time To Complete) * Commission Fee
-COST_PER_RESPONSE
-MAX_N = 1000/COST_PER_RESPONSE
+MAX_N = 1100/COST_PER_RESPONSE # $1000 is max award from Emory
 ALPHA = 0.05
 TREATMENT_1_EFFECT_SIZE = 0.172 # Kertzer & Zeitoff (2017) *See Below
 TREATMENT_2_EFFECT_SIZE = 0.376 # Kertzer & Zeitoff (2017) *See Below
 TARGET_POWER = 0.8
 AVERAGE_OUTCOME = 1.84548 # Kertzer & Zeitoff (2017) *See Below
 STANDARD_DEVIATION = 1.112738 # Kertzer & Zeitoff (2017) *See Below
-possible.ns <- seq(from=100, to=MAX_N, by=100) # The sample sizes we'll be considering
+possible.ns <- seq(from=300, to=MAX_N, by=100) # The sample sizes we'll be considering
 
 # # SIMULATED EXPERIMENT WITH ONE TREATMENT GROUP
 # stopifnot(all( (possible.ns %% 2)==0 )) # require even number of experimental pool
@@ -60,7 +59,7 @@ power.bothtreatments <- rep(NA, length(possible.ns))
 power.treatmentvtreatment <- rep(NA, length(possible.ns))
 power.fullranking <- rep(NA, length(possible.ns))
 alpha <- ALPHA  #(one-tailed test at .05 level)
-sims <- 300
+sims <- 500
 #### Outer loop to vary the number of subjects ####
 for (j in 1:length(possible.ns)){
   N <- possible.ns[j]

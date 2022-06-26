@@ -4,18 +4,21 @@ library(tidyverse)
 
 # KEY ASSUMPTIONS
 ALPHA = 0.05
-TREATMENT_EFFECT_SIZE = 0.26
+TREATMENT_1_EFFECT_SIZE = 0.172 # Kertzer & Zeitoff (2017) *See Power-Calculations.R
+TREATMENT_2_EFFECT_SIZE = 0.376 # Kertzer & Zeitoff (2017) *See Power-Calculations.R
 TARGET_POWER = 0.8
-AVERAGE_OUTCOME = 1.84548
-STANDARD_DEVIATION = 1.112738
+AVERAGE_OUTCOME = 1.84548 # Kertzer & Zeitoff (2017) *See Power-Calculations.R
+STANDARD_DEVIATION = 1.112738 # Kertzer & Zeitoff (2017) *See Power-Calculations.R
 
 # General Variables
 sample_size <- 1000
 
 # Set Treatment Biases
 # ("DIRECT", "INDIRECT", "ECONOMIC", "POLITICAL", "GENERAL")
-te <- TREATMENT_EFFECT_SIZE
-treatment_bias <- c(-te, te, te, te, -te)
+t1e <- TREATMENT_1_EFFECT_SIZE
+t2e <- TREATMENT_2_EFFECT_SIZE
+t1_bias <- c(-t1e, t1e, t1e, t1e, -t1e)
+t2_bias <- c(-t2e, t2e, t2e, t2e, -t2e)
 
 # Set Control Biases
 pro_russia_bias <- c(-1, -1, -1, -1, -1)
@@ -24,8 +27,8 @@ pro_warfare_bias <- c(1, 1, 0, 0, 0)
 anti_warfare_bias <- c(-1, -1, 0, 0, 0)
 
 # Generate Data
-treatment <- sample(c(0, 1, 2), sample_size, replace = TRUE)
-
+treatment <- sample(c("T0", "T1", "T2"), sample_size, replace = TRUE)
+Z <- modify(treatment, function(x){if(x!="T0"){return(1)}else{return(0)}})
 # 1 is anti, 2 is neutral, 3 is pro
 russian_control <- sample(c(1, 2, 3), sample_size, replace = TRUE)
 warfare_control <- sample(c(1, 2, 3), sample_size, replace = TRUE)
@@ -40,7 +43,8 @@ general_unbiased <- sample(c(0, 1, 2, 3, 4), sample_size, replace = TRUE)
 # Create the df
 ubiased_df <- data.frame(
   id = 1:sample_size,
-  Z = treatment,
+  treatment = treatment,
+  Z = Z,
   russia = russian_control,
   warfare = warfare_control,
   direct = direct_unbiased,
@@ -72,33 +76,33 @@ biased_df
 # Create the treated DF
 treated_df <- biased_df %>%
   transform(direct = case_when(
-      Z == 0 ~ direct,   
-      Z == 1 ~ direct - TREATMENT_EFFECT_SIZE,
-      Z == 2 ~ direct + TREATMENT_EFFECT_SIZE
+      treatment == "T0" ~ direct,   
+      treatment == "T1" ~ direct - t1e,
+      treatment == "T2" ~ direct - t2e
     )
   ) %>%
   transform(indirect = case_when(
-      Z == 0 ~ indirect,
-      Z == 1 ~ indirect + TREATMENT_EFFECT_SIZE,
-      Z == 2 ~ indirect - TREATMENT_EFFECT_SIZE
+      treatment == "T0" ~ indirect,
+      treatment == "T1" ~ indirect + t1e,
+      treatment == "T2" ~ indirect + t2e
     )
   ) %>%
   transform(economic = case_when(
-      Z == 0 ~ economic,
-      Z == 1 ~ economic + TREATMENT_EFFECT_SIZE,
-      Z == 2 ~ economic - TREATMENT_EFFECT_SIZE
+      treatment == "T0" ~ economic,
+      treatment == "T1" ~ economic + t1e,
+      treatment == "T2" ~ economic + t2e
     )
   ) %>%
   transform(political = case_when(
-      Z == 0 ~ political,
-      Z == 1 ~ political + TREATMENT_EFFECT_SIZE,
-      Z == 2 ~ political - TREATMENT_EFFECT_SIZE
+      treatment == "T0" ~ political,
+      treatment == "T1" ~ political + t1e,
+      treatment == "T2" ~ political + t2e
     )
   ) %>%
   transform(general = case_when(
-      Z == 0 ~ general,
-      Z == 1 ~ general - TREATMENT_EFFECT_SIZE,
-      Z == 2 ~ general + TREATMENT_EFFECT_SIZE
+      treatment == "T0" ~ general,
+      treatment == "T1" ~ general - t1e,
+      treatment == "T2" ~ general - t2e
     )
   ) %>%
   mutate(across(direct:general, ~ case_when(

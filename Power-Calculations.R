@@ -2,53 +2,62 @@
 # https://egap.org/resource/10-things-to-know-about-statistical-power/
 # https://egap.org/resource/script-power-analysis-simulations-in-r/
 library(randomizr)  
+library(xtable)
+options(xtable.floating = FALSE)
+options(xtable.timestamp = "")
 
 
 # KEY ASSUMPTIONS
-COST_PER_RESPONSE = 0.80 # Based on GA minimum wage for a 5 minute survey + 20 Cents
+COST_PER_RESPONSE = (7.25/12)*1.2 # (Hourly Minimum Wage/Time To Complete) * Commission Fee
+COST_PER_RESPONSE
 MAX_N = 1000/COST_PER_RESPONSE
 ALPHA = 0.05
-TREATMENT_EFFECT_SIZE = 0.26
+TREATMENT_1_EFFECT_SIZE = 0.172 # Kertzer & Zeitoff (2017) *See Below
+TREATMENT_2_EFFECT_SIZE = 0.376 # Kertzer & Zeitoff (2017) *See Below
 TARGET_POWER = 0.8
-AVERAGE_OUTCOME = 1.84548
-STANDARD_DEVIATION = 1.112738
-
-# RUNNING SIMULATED EXPERIMENTS
+AVERAGE_OUTCOME = 1.84548 # Kertzer & Zeitoff (2017) *See Below
+STANDARD_DEVIATION = 1.112738 # Kertzer & Zeitoff (2017) *See Below
 possible.ns <- seq(from=100, to=MAX_N, by=100) # The sample sizes we'll be considering
-stopifnot(all( (possible.ns %% 2)==0 )) # require even number of experimental pool
-powers <- rep(NA, length(possible.ns)) # Empty object to collect simulation estimates 
-alpha <- ALPHA # Standard significance level 
-sims <- 500 # Number of simulations to conduct for each N 
-#### Outer loop to vary the number of subjects #### 
-for (j in 1:length(possible.ns)){
-  significant.experiments <- rep(NA, sims) # Empty object to count significant experiments 
-  #### Inner loop to conduct experiments "sims" times over for each N #### 
-    for (i in 1:sims){ 
-      Y0 <- rnorm(n=N, mean=AVERAGE_OUTCOME, sd=STANDARD_DEVIATION) # control potential outcome 
-      tau <- TREATMENT_EFFECT_SIZE # Hypothesize treatment effect 
-      Y1 <- Y0 + tau # treatment potential outcome 
-      ## Z.sim <- rbinom(n=N, size=1, prob=.5) # Do a random assignment  by coin flip
-      Z.sim <- sample(rep(c(0,1),N/2)) ## Do a random assignment ensuring equal sized groups
-      Y.sim <- Y1*Z.sim + Y0*(1-Z.sim) # Reveal outcomes according to assignment 
-      fit.sim <- lm(Y.sim ~ Z.sim) # Do analysis (Simple regression) 
-      p.value <- summary(fit.sim)$coefficients[2,4] # Extract p-values 
-      significant.experiments[i] <- (p.value <= alpha) # Determine significance according to p <= 0.05
-    }
-  powers[j] <- mean(significant.experiments) # store average success rate (power) for each N 
-} 
 
-single_treatment_powers_df = data.frame(
-  sample_size = possible.ns,
-  power = powers,
-  cost = possible.ns * COST_PER_RESPONSE
-  )
-
-single_treatment_powers_df
+# # SIMULATED EXPERIMENT WITH ONE TREATMENT GROUP
+# stopifnot(all( (possible.ns %% 2)==0 )) # require even number of experimental pool
+# powers <- rep(NA, length(possible.ns)) # Empty object to collect simulation estimates 
+# alpha <- ALPHA # Standard significance level 
+# sims <- 500 # Number of simulations to conduct for each N 
+# #### Outer loop to vary the number of subjects #### 
+# for (j in 1:length(possible.ns)){
+#   significant.experiments <- rep(NA, sims) # Empty object to count significant experiments 
+#   #### Inner loop to conduct experiments "sims" times over for each N #### 
+#     for (i in 1:sims){ 
+#       Y0 <- rnorm(n=N, mean=AVERAGE_OUTCOME, sd=STANDARD_DEVIATION) # control potential outcome 
+#       tau <- TREATMENT_EFFECT_SIZE # Hypothesize treatment effect 
+#       Y1 <- Y0 + tau # treatment potential outcome 
+#       ## Z.sim <- rbinom(n=N, size=1, prob=.5) # Do a random assignment  by coin flip
+#       Z.sim <- sample(rep(c(0,1),N/2)) ## Do a random assignment ensuring equal sized groups
+#       Y.sim <- Y1*Z.sim + Y0*(1-Z.sim) # Reveal outcomes according to assignment 
+#       fit.sim <- lm(Y.sim ~ Z.sim) # Do analysis (Simple regression) 
+#       p.value <- summary(fit.sim)$coefficients[2,4] # Extract p-values 
+#       significant.experiments[i] <- (p.value <= alpha) # Determine significance according to p <= 0.05
+#     }
+#   powers[j] <- mean(significant.experiments) # store average success rate (power) for each N 
+# } 
+# 
+# single_treatment_powers_df = data.frame(
+#   sample_size = possible.ns,
+#   power = powers,
+#   cost = possible.ns * COST_PER_RESPONSE
+#   )
+# 
+# single_treatment_powers_df
+# 
+# data(single_treatment_powers_df)
+# xtable(single_treatment_powers_df)
 
 
 # MULTIPLE ARMS POWER ANALYSIS
 power.atleastone <- rep(NA, length(possible.ns))
 power.bothtreatments <- rep(NA, length(possible.ns))
+power.treatmentvtreatment <- rep(NA, length(possible.ns))
 power.fullranking <- rep(NA, length(possible.ns))
 alpha <- ALPHA  #(one-tailed test at .05 level)
 sims <- 300
@@ -56,48 +65,60 @@ sims <- 300
 for (j in 1:length(possible.ns)){
   N <- possible.ns[j]
   # P-Values and Coefficient Containers
-  p.T1vsC <- rep(NA, sims) # Treatment 1 vs Control 
-  p.T2vsC <- rep(NA, sims) # Treatment 2 vs Control
-  p.T2vsT1 <- rep(NA, sims) # etc...
-  c.T1vsC <- rep(NA, sims)
-  c.T2vsC <- rep(NA, sims)
-  c.T2vsT1 <- rep(NA, sims)
+  p.T1vsC <- rep(NA, sims) # Treatment 1 vs Control [P-Value]
+  p.T2vsC <- rep(NA, sims) # Treatment 2 vs Control [P-Value]
+  p.T2vsT1 <- rep(NA, sims) # Treatment 2 vs Treatment 1 [P-Value]
+  c.T1vsC <- rep(NA, sims)  # Treatment 1 vs Control [Coefficient]
+  c.T2vsC <- rep(NA, sims)  # Treatment 2 vs Control [Coefficient]
+  c.T2vsT1 <- rep(NA, sims) # Treatment 1 vs Control [Coefficient]
   #### Inner loop to conduct experiments "sims" times over for each N ####
   for (i in 1:sims){
-    Y0 <-  rnorm(n=N, mean=AVERAGE_OUTCOME, sd=STANDARD_DEVIATION)
-    tau_1 <- TREATMENT_EFFECT_SIZE
-    tau_2 <- TREATMENT_EFFECT_SIZE
-    Y1 <- Y0 + tau_1
-    Y2 <- Y0 + tau_2
-    Z.sim <- complete_ra(N=N, num_arms=3)
-    Y.sim <- Y0*(Z.sim=="T3") + Y1*(Z.sim=="T1") + Y2*(Z.sim=="T2")
-    frame.sim <- data.frame(Y.sim, Z.sim)
-    fit.T1vsC.sim <- lm(Y.sim ~ Z.sim=="T1", data=subset(frame.sim, Z.sim!="T2"))
-    fit.T2vsC.sim <- lm(Y.sim ~ Z.sim=="T2", data=subset(frame.sim, Z.sim!="T1"))
-    fit.T2vsT1.sim <- lm(Y.sim ~ Z.sim=="T2", data=subset(frame.sim, Z.sim!="T3"))
-    
+    Y0 <-  rnorm(n=N, mean=AVERAGE_OUTCOME, sd=STANDARD_DEVIATION) # Control
+    tau_1 <- TREATMENT_1_EFFECT_SIZE
+    tau_2 <- TREATMENT_2_EFFECT_SIZE
+    Y1 <- Y0 + tau_1  # Treatment 1 Outcome
+    Y2 <- Y0 + tau_2  # Treatment 2 Outcome
+    Z.sim <- complete_ra(N=N, num_arms=3) # Assigns to treatment groups randomly
+    Y.sim <- Y0*(Z.sim=="T3") + Y1*(Z.sim=="T1") + Y2*(Z.sim=="T2") # Outcomes based on groups (T3 is control)
+    frame.sim <- data.frame(Y.sim, Z.sim) # Place in DF
+    fit.T1vsC.sim <- lm(Y.sim ~ Z.sim=="T1", data=subset(frame.sim, Z.sim!="T2")) # Treatment 1 vs Control
+    fit.T2vsC.sim <- lm(Y.sim ~ Z.sim=="T2", data=subset(frame.sim, Z.sim!="T1")) # Treatment 2 vs Control
+    fit.T2vsT1.sim <- lm(Y.sim ~ Z.sim=="T2", data=subset(frame.sim, Z.sim!="T3")) # Treatment 2 vs Treatment 1
     ### Need to capture coefficients and pvalues (one-tailed tests, so signs are important)
-    c.T1vsC[i] <- summary(fit.T1vsC.sim)$coefficients[2,1]
-    c.T2vsC[i] <- summary(fit.T2vsC.sim)$coefficients[2,1]
-    c.T2vsT1[i] <- summary(fit.T2vsT1.sim)$coefficients[2,1]
-    p.T1vsC[i] <- summary(fit.T1vsC.sim)$coefficients[2,4]
-    p.T2vsC[i] <- summary(fit.T2vsC.sim)$coefficients[2,4]
-    p.T2vsT1[i] <- summary(fit.T2vsT1.sim)$coefficients[2,4]
+    c.T1vsC[i] <- summary(fit.T1vsC.sim)$coefficients[2,1] # Get Coefficient
+    c.T2vsC[i] <- summary(fit.T2vsC.sim)$coefficients[2,1] # Get Coefficient
+    c.T2vsT1[i] <- summary(fit.T2vsT1.sim)$coefficients[2,1] # Get Coefficient
+    p.T1vsC[i] <- summary(fit.T1vsC.sim)$coefficients[2,4] # Get P-Value
+    p.T2vsC[i] <- summary(fit.T2vsC.sim)$coefficients[2,4] # Get P-Value
+    p.T2vsT1[i] <- summary(fit.T2vsT1.sim)$coefficients[2,4] # Get P-Value
   }
+  # The proportion of experiments where the effect of either T1 or T2 is > 0
+  # and at least one is significant (alpha/2 cause Bonferroni Correction)
   power.atleastone[j] <- mean(c.T1vsC>0 & c.T2vsC>0 & (p.T1vsC < alpha/2 | p.T2vsC < alpha/2))
+  # The proportion of experiments where the effect of either T1 or T2 is > 0
+  # and both are significant (alpha/2 cause Bonferroni Correction)
   power.bothtreatments[j] <- mean(c.T1vsC>0 & c.T2vsC>0 & p.T1vsC < alpha/2 & p.T2vsC < alpha/2)
+  # The proportion of experiments where T1 vs T2 is > 0
+  # and is significant (alpha/2 cause Bonferroni Correction)
+  power.treatmentvtreatment[j]<- mean(c.T2vsT1 > 0 & p.T2vsT1 < alpha/2)
+  # The proportion of experiments where the effect of either T1 or T2 is > 0
+  # and all are significant (alpha/2 cause Bonferroni Correction)
   power.fullranking[j] <- mean(c.T1vsC>0 & c.T2vsC>0 & c.T2vsT1 > 0 & p.T1vsC < alpha/2 & p.T2vsT1 < alpha/2)
 }
 
 multiple_treatment_powers_df = data.frame(
-  sample_size = possible.ns,
-  power.atleastone = power.atleastone,
-  power.bothtreatments = power.bothtreatments,
-  power.fullranking = power.fullranking,
-  cost = possible.ns * COST_PER_RESPONSE
+  N = possible.ns,
+  "Power: At Least One" = power.atleastone,
+  "Power: Both Treatments" = power.bothtreatments,
+  "Power: T1 vs T2" = power.treatmentvtreatment,
+  "Power: Full Ranking" = power.fullranking,
+  "Cost" = possible.ns * COST_PER_RESPONSE
 )
 
 multiple_treatment_powers_df
+
+data(multiple_treatment_powers_df)
+xtable(multiple_treatment_powers_df)
 
 
 # Kertzer & Zeitoff (2017) FOR ASSUMPTIONS:
@@ -183,10 +204,15 @@ multiple_treatment_powers_df
     # Group Endorse -    
     # Group Oppose  0.094
     #
-    mean_effect <- mean(c(0.070,0.054,0.066,0.064,0.043,0.094,0.064))
-    # 0.065
-    assumed_effect <- mean_effect * 4 # scale of 0-1 converted to 0-4
-    assumed_effect # 0.26
+    effects = c(0.070,0.054,0.066,0.064,0.043,0.094,0.064)
+    mean_effect <- mean(effects)
+    sd_effect <- sd(effects)
+    range_effect = range(effects)
+    assumed_effect_range <- range_effect * 4 # scale of 0-1 converted to 0-4
+    T1_effect <- assumed_effect_range[1]
+    T2_effect <- assumed_effect_range[2]
+    T1_effect # 0.172
+    T2_effect # 0.376
     
     
     

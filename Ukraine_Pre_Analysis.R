@@ -321,7 +321,6 @@ general_model_4_c <-
     data=subset(data, treatment!="T0")
   )
 
-
 # Generate Regression Output...
 # Check coefficient names
 texreg(list(direct_model_1, direct_model_1_c, 
@@ -331,6 +330,7 @@ texreg(list(direct_model_1, direct_model_1_c,
        include.ci = FALSE,
        digits = 3)
 
+
 # Generate Custom Outputs
 texreg(list(direct_model_1, direct_model_1_c, 
             direct_model_2, direct_model_2_c, 
@@ -339,14 +339,16 @@ texreg(list(direct_model_1, direct_model_1_c,
         custom.coef.names = c(
           "Intercept",
           "Z",
-          "+ Opinions On Warfare",
-          "+ Opinions On Russia",
-          "Treatment"
+          "+ Military Assertiveness",
+          "+ Internationalism",
+          "Treatment 1",
+          "Treatment 2"
         ),
         digits = 4,
         stars = c(0.001, 0.01, 0.05),
         custom.note = "%stars. Robust standard errors are in parentheses.",
-        reorder.coef = c(2, 5, 3, 4, 1),
+        reorder.coef = c(1, 2, 5, 6, 3, 4),
+        custom.model.names = c("T1 or T2","control","T1","control","T2","control","T1 vs T2","control"),
         include.ci = FALSE,
         caption = "DIRECT WARFARE",
         caption.above = TRUE,
@@ -369,14 +371,15 @@ texreg(list(indirect_model_1, indirect_model_1_c,
        custom.coef.names = c(
          "Intercept",
          "Z",
-         "+ Opinions On Warfare",
-         "+ Opinions On Russia",
-         "Treatment"
+         "+ Military Assertiveness",
+         "+ Internationalism",
+          "Treatment 1",           "Treatment 2"
        ),
        digits = 4,
        stars = c(0.001, 0.01, 0.05),
        custom.note = "%stars. Robust standard errors are in parentheses.",
-       reorder.coef = c(2, 5, 3, 4, 1),
+       reorder.coef = c(1, 2, 5, 6, 3, 4),
+       custom.model.names = c("T1 or T2","control","T1","control","T2","control","T1 vs T2","control"),
        include.ci = FALSE,
        caption = "INDIRECT AID",
        caption.above = TRUE,
@@ -400,14 +403,16 @@ texreg(list(economic_model_1, economic_model_1_c,
        custom.coef.names = c(
          "Intercept",
          "Z",
-         "+ Opinions On Warfare",
-         "+ Opinions On Russia",
-         "Treatment"
+         "+ Military Assertiveness",
+         "+ Internationalism",
+         "Treatment 1",
+         "Treatment 2"
        ),
        digits = 4,
        stars = c(0.001, 0.01, 0.05),
        custom.note = "%stars. Robust standard errors are in parentheses.",
-       reorder.coef = c(2, 5, 3, 4, 1),
+       reorder.coef = c(1, 2, 5, 6, 3, 4),
+       custom.model.names = c("T1 or T2","control","T1","control","T2","control","T1 vs T2","control"),
        include.ci = FALSE,
        caption = "ECONOMIC SANCTIONS",
        caption.above = TRUE,
@@ -431,14 +436,16 @@ texreg(list(political_model_1, political_model_1_c,
        custom.coef.names = c(
          "Intercept",
          "Z",
-         "+ Opinions On Warfare",
-         "+ Opinions On Russia",
-         "Treatment"
+         "+ Military Assertiveness",
+         "+ Internationalism",
+         "Treatment 1",
+         "Treatment 2"
        ),
        digits = 4,
        stars = c(0.001, 0.01, 0.05),
        custom.note = "%stars. Robust standard errors are in parentheses.",
-       reorder.coef = c(2, 5, 3, 4, 1),
+       reorder.coef = c(1, 2, 5, 6, 3, 4),
+       custom.model.names = c("T1 or T2","control","T1","control","T2","control","T1 vs T2","control"),
        include.ci = FALSE,
        caption = "POLITICAL CONDEMNATION",
        caption.above = TRUE,
@@ -462,14 +469,16 @@ texreg(list(general_model_1, general_model_1_c,
        custom.coef.names = c(
          "Intercept",
          "Z",
-         "+ Opinions On Warfare",
-         "+ Opinions On Russia",
-         "Treatment"
+         "+ Military Assertiveness",
+         "+ Internationalism",
+         "Treatment 1",
+         "Treatment 2"
        ),
        digits = 4,
        stars = c(0.001, 0.01, 0.05),
        custom.note = "%stars. Robust standard errors are in parentheses.",
-       reorder.coef = c(2, 5, 3, 4, 1),
+       reorder.coef = c(1, 2, 5, 6, 3, 4),
+       custom.model.names = c("T1 or T2","control","T1","control","T2","control","T1 vs T2","control"),
        include.ci = FALSE,
        caption = "GENERAL DEGREE OF RESPONSE",
        caption.above = TRUE,

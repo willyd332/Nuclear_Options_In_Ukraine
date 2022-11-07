@@ -20,8 +20,6 @@ data <- read.csv('./1000_Row_Dummy_Qualtrics_Data_Nov-6-2022.csv')
 
 raw_data <- as_tibble(data)
 
-raw_data
-
 # Rename Columns
 raw_data <- raw_data %>%
   rename(
@@ -268,12 +266,14 @@ full_group <- indexed_data %>%
   mutate(Overall_Index = ifelse(is.na(T2_Overall_Index),ifelse(is.na(T1_Overall_Index),Control_Overall_Index,T1_Overall_Index),T2_Overall_Index)) %>%
   mutate(Time_Spent_Index = ifelse(is.na(T2_Time_Spent_Index),ifelse(is.na(T1_Time_Spent_Index),Control_Time_Spent_Index,T1_Time_Spent_Index),T2_Time_Spent_Index))
 
+# Export To CSV
+write.csv(full_group,"indexed_data.csv", row.names = FALSE)
 
-# Create treatment groups
-control_group <- subset(full_group, Treatment == "C")
-t_group <- subset(full_group, Treatment == "T")
-t1_group <- subset(full_group, TreatmentGroup == "T1")
-t2_group <- subset(full_group, TreatmentGroup == "T2")
+# # Create treatment groups
+# control_group <- subset(full_group, Treatment == "C")
+# t_group <- subset(full_group, Treatment == "T")
+# t1_group <- subset(full_group, TreatmentGroup == "T1")
+# t2_group <- subset(full_group, TreatmentGroup == "T2")
 
 # print("Full Group Summary")
 # summary(full_group)

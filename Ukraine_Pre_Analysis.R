@@ -93,83 +93,83 @@ clean_data <- raw_data
 # !!! Delete For Real Analysis !!! Delete For Real Analysis !!! Delete For Real Analysis !!!
 
 # Convert Characters To Numeric
-clean_data$Control_General <- as.numeric(clean_data$Control_General) %>%
-  replace_na(-1)
-clean_data$Control_Threat <- as.numeric(clean_data$Control_Threat) %>%
-  replace_na(-1)
-clean_data$T1_General <- as.numeric(clean_data$T1_General) %>%
-  replace_na(-1)
-clean_data$T1_Threat <- as.numeric(clean_data$T1_Threat) %>%
-  replace_na(-1)
-clean_data$T2_General <- as.numeric(clean_data$T2_General) %>%
-  replace_na(-1)
-clean_data$T2_Threat <- as.numeric(clean_data$T2_Threat) %>%
-  replace_na(-1)
+clean_data$Control_General <- as.numeric(clean_data$Control_General)
+clean_data$Control_Threat <- as.numeric(clean_data$Control_Threat)
+clean_data$T1_General <- as.numeric(clean_data$T1_General)
+clean_data$T1_Threat <- as.numeric(clean_data$T1_Threat)
+clean_data$T2_General <- as.numeric(clean_data$T2_General)
+clean_data$T2_Threat <- as.numeric(clean_data$T2_Threat)
 
-clean_data$Ideology_LR <- as.numeric(clean_data$Ideology_LR) %>%
-  replace_na(-1)
+clean_data$Control_First_Click <- as.numeric(clean_data$Control_First_Click)
+clean_data$Control_Page_Submit <- as.numeric(clean_data$Control_Page_Submit)
+clean_data$T1_First_Click <- as.numeric(clean_data$T1_First_Click)
+clean_data$T1_Page_Submit <- as.numeric(clean_data$T1_Page_Submit)
+clean_data$T2_First_Click <- as.numeric(clean_data$T2_First_Click)
+clean_data$T2_Page_Submit <- as.numeric(clean_data$T2_Page_Submit)
+
+clean_data$Ideology_LR <- as.numeric(clean_data$Ideology_LR)
 
   # Convert Main Outcomes
 clean_data <- clean_data %>%
   mutate(Control_Direct = case_when(
     .$Control_Direct == "Send US troops to Ukraine" ~ 1,
     .$Control_Direct == "Do not send US troops to Ukraine" ~ 0,
-    .$Control_Direct == "" ~ -1
+    .$Control_Direct == "" ~ NaN
   )) %>%
   mutate(Control_Indirect = case_when(
     .$Control_Indirect == "Send military resources to Ukrainian troops" ~ 1,
     .$Control_Indirect == "Do not send military resources to Ukrainian troops" ~ 0,
-    .$Control_Indirect == "" ~ -1
+    .$Control_Indirect == "" ~ NaN
   )) %>%
   mutate(Control_Economic = case_when(
     .$Control_Economic == "Enact economic sanctions on Russia" ~ 1,
     .$Control_Economic == "Do not enact economic sanctions on Russia" ~ 0,
-    .$Control_Economic == "" ~ -1
+    .$Control_Economic == "" ~ NaN
   )) %>%
   mutate(Control_Political = case_when(
     .$Control_Political == "Condemn Russia's actions in an international court" ~ 1,
     .$Control_Political == "Do not condemn Russia's actions in an international court" ~ 0,
-    .$Control_Political == "" ~ -1
+    .$Control_Political == "" ~ NaN
   )) %>%
   mutate(T1_Direct = case_when(
     .$T1_Direct == "Send US troops to Ukraine" ~ 1,
     .$T1_Direct == "Do not send US troops to Ukraine" ~ 0,
-    .$T1_Direct == "" ~ -1
+    .$T1_Direct == "" ~ NaN
   )) %>%
   mutate(T1_Indirect = case_when(
     .$T1_Indirect == "Send military resources to Ukrainian troops" ~ 1,
     .$T1_Indirect == "Do not send military resources to Ukrainian troops" ~ 0,
-    .$T1_Indirect == "" ~ -1
+    .$T1_Indirect == "" ~ NaN
   )) %>%
   mutate(T1_Economic = case_when(
     .$T1_Economic == "Enact economic sanctions on Russia" ~ 1,
     .$T1_Economic == "Do not enact economic sanctions on Russia" ~ 0,
-    .$T1_Economic == "" ~ -1
+    .$T1_Economic == "" ~ NaN
   )) %>%
   mutate(T1_Political = case_when(
     .$T1_Political == "Condemn Russia's actions in an international court" ~ 1,
     .$T1_Political == "Do not condemn Russia's actions in an international court" ~ 0,
-    .$T1_Political == "" ~ -1
+    .$T1_Political == "" ~ NaN
   )) %>%
   mutate(T2_Direct = case_when(
     .$T2_Direct == "Send US troops to Ukraine" ~ 1,
     .$T2_Direct == "Do not send US troops to Ukraine" ~ 0,
-    .$T2_Direct == "" ~ -1
+    .$T2_Direct == "" ~ NaN
   )) %>%
   mutate(T2_Indirect = case_when(
     .$T2_Indirect == "Send military resources to Ukrainian troops" ~ 1,
     .$T2_Indirect == "Do not send military resources to Ukrainian troops" ~ 0,
-    .$T2_Indirect == "" ~ -1
+    .$T2_Indirect == "" ~ NaN
   )) %>%
   mutate(T2_Economic = case_when(
     .$T2_Economic == "Enact economic sanctions on Russia" ~ 1,
     .$T2_Economic == "Do not enact economic sanctions on Russia" ~ 0,
-    .$T2_Economic == "" ~ -1
+    .$T2_Economic == "" ~ NaN
   )) %>%
   mutate(T2_Political = case_when(
     .$T2_Political == "Condemn Russia's actions in an international court" ~ 1,
     .$T2_Political == "Do not condemn Russia's actions in an international court" ~ 0,
-    .$T2_Political == "" ~ -1
+    .$T2_Political == "" ~ NaN
   ))
 
 # Convert Military/Internationalism To Numeric
@@ -203,8 +203,7 @@ clean_data <- clean_data %>%
     .$Internationalism_2_reverse == "Strongly disagree" ~ 2,
   ))
   
-
-# Convert Political Knowlege To Numeric
+# Convert Political Knowledge To Numeric
 clean_data <- clean_data %>%
   mutate(KnowledgeTest_Conservative = case_when(
     .$KnowledgeTest_Conservative == "Republicans" ~ 1,
@@ -223,16 +222,36 @@ clean_data <- clean_data %>%
     TRUE ~ 0,
   ))
 
-colnames(clean_data)
+# Create an index for political knowledge
+indexed_data <- clean_data %>%
+  mutate(Knowledge_Index =
+           (KnowledgeTest_Conservative +
+           KnowledgeTest_NATO +
+           KnowledgeTest_UK +
+           KnowledgeTest_Zelensky) / 4)
 
-# Create New Columns/Indexes
-  # Non-Military Index (For each group)
-  # Overall Index (For each group)
-  # Time Spent (For each group)
-  # Militarism Index (Average)
-  # Internationalism Index (Average)
-  # Political Knowledge Index (Total)
+# Create an index for non-military outcomes
+indexed_data <- clean_data %>%
+  mutate(Control_Nonmilitary_Index = (Control_Economic + Control_Political)/2) %>%
+  mutate(T1_Nonmilitary_Index = (T1_Economic + T1_Political)/2) %>%
+  mutate(T2_Nonmilitary_Index = (T2_Economic + T2_Political)/2)
 
+# Create an index for overall outcome
+indexed_data <- clean_data %>%
+  mutate(Control_Overall_Index = (Control_Direct + Control_Indirect + Control_Economic + Control_Political)/4) %>% 
+  mutate(T1_Overall_Index = (T1_Direct + T1_Indirect + T1_Economic + T1_Political)/4) %>%
+  mutate(T2_Overall_Index = (T2_Direct + T2_Indirect + T2_Economic + T2_Political)/4)
+
+# Create an index for time spent
+indexed_data <- clean_data %>%
+  mutate(Control_Time_Spent_Index = Control_Page_Submit - Control_First_Click) %>%
+  mutate(T1_Time_Spent_Index = T1_Page_Submit - T1_First_Click) %>%
+  mutate(T2_Time_Spent_Index = T2_Page_Submit - T2_First_Click)
+
+# Create an index for militarism and internationalism
+indexed_data <- clean_data %>%
+  mutate(Militarism_Index = (Militarism_1 + Militarism_2_reverse)/2) %>%
+  mutate(Internationalism_Index = (Internationalism_1 + Internationalism_2_reverse)/2)
 
 ## Old Analysis
 

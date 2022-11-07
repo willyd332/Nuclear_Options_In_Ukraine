@@ -35,10 +35,10 @@ raw_data <- raw_data %>%
     Education = Q6,
     Employment = Q7,
     Income = Q8,
-    militarism_1 = mil_inter_1,
-    militarism_2_reverse = mil_inter_2,
-    internationalism_1 = mil_inter_3,
-    internationalism_2 = mil_inter_4,
+    Militarism_1 = mil_inter_1,
+    Militarism_2_reverse = mil_inter_2,
+    Internationalism_1 = mil_inter_3,
+    Internationalism_2_reverse = mil_inter_4,
     Ideology_LR = ideology_1,
     PoliticalInterest = interest,
     KnowledgeTest_Conservative = conservative,
@@ -92,7 +92,22 @@ clean_data <- raw_data %>% subset(Consent != "I don't agree" &
 clean_data <- raw_data
 # !!! Delete For Real Analysis !!! Delete For Real Analysis !!! Delete For Real Analysis !!!
 
-# Convert Text Response into Numeric
+# Convert Characters To Numeric
+clean_data$Control_General <- as.numeric(clean_data$Control_General) %>%
+  replace_na(-1)
+clean_data$Control_Threat <- as.numeric(clean_data$Control_Threat) %>%
+  replace_na(-1)
+clean_data$T1_General <- as.numeric(clean_data$T1_General) %>%
+  replace_na(-1)
+clean_data$T1_Threat <- as.numeric(clean_data$T1_Threat) %>%
+  replace_na(-1)
+clean_data$T2_General <- as.numeric(clean_data$T2_General) %>%
+  replace_na(-1)
+clean_data$T2_Threat <- as.numeric(clean_data$T2_Threat) %>%
+  replace_na(-1)
+
+clean_data$Ideology_LR <- as.numeric(clean_data$Ideology_LR) %>%
+  replace_na(-1)
 
   # Convert Main Outcomes
 clean_data <- clean_data %>%
@@ -157,10 +172,58 @@ clean_data <- clean_data %>%
     .$T2_Political == "" ~ -1
   ))
 
-# General, Threat Response, Etc... should be numeric
+# Convert Military/Internationalism To Numeric
+clean_data <- clean_data %>%
+  mutate(Militarism_1 = case_when(
+    .$Militarism_1 == "Strongly agree" ~ 2,
+    .$Militarism_1 == "Somewhat agree" ~ 1,
+    .$Militarism_1 == "Neither agree nor disagree" ~ 0,
+    .$Militarism_1 == "Somewhat disagree" ~ -1,
+    .$Militarism_1 == "Strongly disagree" ~ -2,
+  )) %>%
+  mutate(Militarism_2_reverse = case_when(
+    .$Militarism_2_reverse == "Strongly agree" ~ -2,
+    .$Militarism_2_reverse == "Somewhat agree" ~ -1,
+    .$Militarism_2_reverse == "Neither agree nor disagree" ~ 0,
+    .$Militarism_2_reverse == "Somewhat disagree" ~ 1,
+    .$Militarism_2_reverse == "Strongly disagree" ~ 2,
+  )) %>%
+  mutate(Internationalism_1 = case_when(
+    .$Internationalism_1 == "Strongly agree" ~ 2,
+    .$Internationalism_1 == "Somewhat agree" ~ 1,
+    .$Internationalism_1 == "Neither agree nor disagree" ~ 0,
+    .$Internationalism_1 == "Somewhat disagree" ~ -1,
+    .$Internationalism_1 == "Strongly disagree" ~ -2,
+  )) %>%
+  mutate(Internationalism_2_reverse = case_when(
+    .$Internationalism_2_reverse == "Strongly agree" ~ -2,
+    .$Internationalism_2_reverse == "Somewhat agree" ~ -1,
+    .$Internationalism_2_reverse == "Neither agree nor disagree" ~ 0,
+    .$Internationalism_2_reverse == "Somewhat disagree" ~ 1,
+    .$Internationalism_2_reverse == "Strongly disagree" ~ 2,
+  ))
   
-  
-colnames(raw_data)
+
+# Convert Political Knowlege To Numeric
+clean_data <- clean_data %>%
+  mutate(KnowledgeTest_Conservative = case_when(
+    .$KnowledgeTest_Conservative == "Republicans" ~ 1,
+    TRUE ~ 0,
+  )) %>%
+  mutate(KnowledgeTest_NATO = case_when(
+    .$KnowledgeTest_NATO == "Ukraine" ~ 1,
+    TRUE ~ 0,
+  )) %>%
+  mutate(KnowledgeTest_UK = case_when(
+    .$KnowledgeTest_UK == "Boris Johnson" ~ 1,
+    TRUE ~ 0,
+  )) %>%
+  mutate(KnowledgeTest_Zelensky = case_when(
+    .$KnowledgeTest_Zelensky == "Ukraine" ~ 1,
+    TRUE ~ 0,
+  ))
+
+colnames(clean_data)
 
 # Create New Columns/Indexes
   # Non-Military Index (For each group)

@@ -223,7 +223,8 @@ clean_data <- clean_data %>%
   ))
 
 # Create an index for political knowledge
-indexed_data <- clean_data %>%
+indexed_data <- clean_data 
+indexed_data <- indexed_data %>%
   mutate(Knowledge_Index =
            (KnowledgeTest_Conservative +
            KnowledgeTest_NATO +
@@ -231,43 +232,83 @@ indexed_data <- clean_data %>%
            KnowledgeTest_Zelensky) / 4)
 
 # Create an index for non-military outcomes
-indexed_data <- clean_data %>%
+indexed_data <- indexed_data %>%
   mutate(Control_Nonmilitary_Index = (Control_Economic + Control_Political)/2) %>%
   mutate(T1_Nonmilitary_Index = (T1_Economic + T1_Political)/2) %>%
   mutate(T2_Nonmilitary_Index = (T2_Economic + T2_Political)/2)
 
 # Create an index for overall outcome
-indexed_data <- clean_data %>%
+indexed_data <- indexed_data %>%
   mutate(Control_Overall_Index = (Control_Direct + Control_Indirect + Control_Economic + Control_Political)/4) %>% 
   mutate(T1_Overall_Index = (T1_Direct + T1_Indirect + T1_Economic + T1_Political)/4) %>%
   mutate(T2_Overall_Index = (T2_Direct + T2_Indirect + T2_Economic + T2_Political)/4)
 
 # Create an index for time spent
-indexed_data <- clean_data %>%
+indexed_data <- indexed_data %>%
   mutate(Control_Time_Spent_Index = Control_Page_Submit - Control_First_Click) %>%
   mutate(T1_Time_Spent_Index = T1_Page_Submit - T1_First_Click) %>%
   mutate(T2_Time_Spent_Index = T2_Page_Submit - T2_First_Click)
 
 # Create an index for militarism and internationalism
-indexed_data <- clean_data %>%
+indexed_data <- indexed_data %>%
   mutate(Militarism_Index = (Militarism_1 + Militarism_2_reverse)/2) %>%
   mutate(Internationalism_Index = (Internationalism_1 + Internationalism_2_reverse)/2)
 
-## Old Analysis
+# Create treatment groups
+control_group <- subset(indexed_data, !is.na(Control_Direct))
+t1_group <- subset(indexed_data, !is.na(T1_Direct))
+t2_group <- subset(indexed_data, !is.na(T2_Direct))
 
-control_group <- data[data$treatment == "T0",]
-treated_group <- data[data$Z == 1,]
-treatment1_group <- data[data$treatment == "T1",]
-treatment2_group <- data[data$treatment == "T2",]
+# Create combined treatment group
+t_group <- subset(indexed_data, is.na(Control_Direct))
+t_group <- t_group %>%
+  mutate(T_Direct = ifelse(is.na(T2_Direct),T1_Direct,T2_Direct)) %>%
+  mutate(T_Indirect = ifelse(is.na(T2_Indirect),T1_Indirect,T2_Indirect)) %>%
+  mutate(T_Economic = ifelse(is.na(T2_Economic),T1_Economic,T2_Economic)) %>%
+  mutate(T_Political = ifelse(is.na(T2_Political),T1_Political,T2_Political)) %>%
+  mutate(T_General = ifelse(is.na(T2_General),T1_General,T2_General)) %>%
+  mutate(T_Threat = ifelse(is.na(T2_Threat),T1_Threat,T2_Threat)) %>%
+  mutate(T_Nonmilitary_Index = ifelse(is.na(T2_Nonmilitary_Index),T1_Nonmilitary_Index,T2_Nonmilitary_Index)) %>%
+  mutate(T_Overall_Index = ifelse(is.na(T2_Overall_Index),T1_Overall_Index,T2_Overall_Index)) %>%
+  mutate(T_Time_Spent_Index = ifelse(is.na(T2_Time_Spent_Index),T1_Time_Spent_Index,T2_Time_Spent_Index))
 
 print("Control Group Summary")
 summary(control_group)
 print("Treated Group Summary")
-summary(treated_group)
+summary(t_group)
 print("Treatment 1 Group Summary")
-summary(treatment1_group)
+summary(t1_group)
 print("Treatment 2 Group Summary")
-summary(treatment2_group)
+summary(t2_group)  
+
+## Old Analysis Old Analysis Old Analysis Old Analysis Old Analysis Old Analysis
+## Old Analysis Old Analysis Old Analysis Old Analysis Old Analysis Old Analysis
+## Old Analysis Old Analysis Old Analysis Old Analysis Old Analysis Old Analysis
+## Old Analysis Old Analysis Old Analysis Old Analysis Old Analysis Old Analysis
+
+# Create Main Models
+
+  # Control vs Treated
+    # Direct Military
+    # Non-Military
+    # Overall
+    # General
+    # Threat
+
+  # T1 vs T2
+    # Direct Military
+    # Non-Military
+    # Overall
+    # General
+    # Threat
+
+# Create Appendix Models
+  # Control vs Treated
+    # Indirect
+    # Economic
+    # Political
+    # Indirect
+  
 
 # Model 1 -- General Treatment
 direct_model_1 <- 

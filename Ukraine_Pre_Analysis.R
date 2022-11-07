@@ -13,11 +13,69 @@ library(broom)
 library(ggpubr)
 library(estimatr)
 library(texreg)
+library(tidyverse)
 
 # Get the data
-data <- read.csv('./Dummy_Data_Multi_Arm.csv')
+data <- as_tibble(read.csv('./1000_Row_Dummy_Qualtrics_Data_Nov-6-2022.csv'))
 
-data
+colnames(data)
+
+# Rename Columns
+data %>%
+  rename(
+    QualtricsStatus = Status,
+    Duration = Duration..in.seconds.,
+    isFinishedSurvey = Finished,
+    Gender = Q3,
+    Age = Q4,
+    Ethnicity = Q5,
+    Education = Q6,
+    Employment = Q7,
+    Income = Q8,
+    militarism_1 = mil_inter_1,
+    militarism_2_reverse = mil_inter_2,
+    internationalism_1 = mil_inter_3,
+    internationalism_2 = mil_inter_4,
+    Ideology_LR = ideology_1,
+    PoliticalInterest = interest,
+    KnowledgeTest_Conservative = conservative,
+    KnowledgeTest_NATO = nato,
+    KnowledgeTest_UK = uk,
+    KnowledgeTest_Zelensky = zelensky,
+    AttentionCheck = attention,
+    Control_First_Click = Q48_First.Click,
+    Control_Last_Click = Q48_Last.Click,
+    Control_Page_Submit = Q48_Page.Submit,
+    Control_Click_Count = Q48_Click.Count,
+    Control_Direct = direct_mil,
+    Control_Indirect = indirect_mil,
+    Control_Economic = economic,
+    Control_Political = political,
+    Control_General = general_1,
+    Control_Threat = Q40_1,
+    T1_First_Click = Q49_First.Click,
+    T1_Last_Click = Q49_Last.Click,
+    T1_Page_Submit = Q49_Page.Submit,
+    T1_Click_Count = Q49_Click.Count,
+    T1_Direct = Q47,
+    T1_Indirect = Q48,
+    T1_Economic = Q49,
+    T1_Political = Q50,
+    T1_General = Q51_1,
+    T1_Threat = Q52_1,
+    T2_First_Click = Q50_First.Click,
+    T2_Last_Click = Q50_Last.Click,
+    T2_Page_Submit = Q50_Page.Submit,
+    T2_Click_Count = Q50_Click.Count,
+    T2_Direct = Q57,
+    T2_Indirect = Q58,
+    T2_Economic = Q59,
+    T2_Political = Q60,
+    T2_General = Q61_1,
+    T2_Threat = Q62_1,
+  )
+
+
 
 control_group <- data[data$treatment == "T0",]
 treated_group <- data[data$Z == 1,]

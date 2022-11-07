@@ -14,15 +14,18 @@ library(ggpubr)
 library(estimatr)
 library(texreg)
 library(tidyverse)
-
+library(magrittr)
 # Get the data
-data <- as_tibble(read.csv('./1000_Row_Dummy_Qualtrics_Data_Nov-6-2022.csv'))
+data <- read.csv('./1000_Row_Dummy_Qualtrics_Data_Nov-6-2022.csv')
 
-colnames(data)
+raw_data <- as_tibble(data)
+
+raw_data
 
 # Rename Columns
-data %>%
+raw_data <- raw_data %>%
   rename(
+    Consent = consent_q,
     QualtricsStatus = Status,
     Duration = Duration..in.seconds.,
     isFinishedSurvey = Finished,
@@ -75,7 +78,100 @@ data %>%
     T2_Threat = Q62_1,
   )
 
+colnames(raw_data)
 
+nrow(raw_data)
+
+# Drop Unusable Rows
+  # Non Consent | Under 18 | Failed Attention Check
+clean_data <- raw_data %>% subset(Consent != "I don't agree" & 
+                                    Age != "Less than 18 years old" & 
+                                    AttentionCheck == "3")
+
+# !!! Delete For Real Analysis !!! Delete For Real Analysis !!! Delete For Real Analysis !!!
+clean_data <- raw_data
+# !!! Delete For Real Analysis !!! Delete For Real Analysis !!! Delete For Real Analysis !!!
+
+# Convert Text Response into Numeric
+
+  # Convert Main Outcomes
+clean_data <- clean_data %>%
+  mutate(Control_Direct = case_when(
+    .$Control_Direct == "Send US troops to Ukraine" ~ 1,
+    .$Control_Direct == "Do not send US troops to Ukraine" ~ 0,
+    .$Control_Direct == "" ~ -1
+  )) %>%
+  mutate(Control_Indirect = case_when(
+    .$Control_Indirect == "Send military resources to Ukrainian troops" ~ 1,
+    .$Control_Indirect == "Do not send military resources to Ukrainian troops" ~ 0,
+    .$Control_Indirect == "" ~ -1
+  )) %>%
+  mutate(Control_Economic = case_when(
+    .$Control_Economic == "Enact economic sanctions on Russia" ~ 1,
+    .$Control_Economic == "Do not enact economic sanctions on Russia" ~ 0,
+    .$Control_Economic == "" ~ -1
+  )) %>%
+  mutate(Control_Political = case_when(
+    .$Control_Political == "Condemn Russia's actions in an international court" ~ 1,
+    .$Control_Political == "Do not condemn Russia's actions in an international court" ~ 0,
+    .$Control_Political == "" ~ -1
+  )) %>%
+  mutate(T1_Direct = case_when(
+    .$T1_Direct == "Send US troops to Ukraine" ~ 1,
+    .$T1_Direct == "Do not send US troops to Ukraine" ~ 0,
+    .$T1_Direct == "" ~ -1
+  )) %>%
+  mutate(T1_Indirect = case_when(
+    .$T1_Indirect == "Send military resources to Ukrainian troops" ~ 1,
+    .$T1_Indirect == "Do not send military resources to Ukrainian troops" ~ 0,
+    .$T1_Indirect == "" ~ -1
+  )) %>%
+  mutate(T1_Economic = case_when(
+    .$T1_Economic == "Enact economic sanctions on Russia" ~ 1,
+    .$T1_Economic == "Do not enact economic sanctions on Russia" ~ 0,
+    .$T1_Economic == "" ~ -1
+  )) %>%
+  mutate(T1_Political = case_when(
+    .$T1_Political == "Condemn Russia's actions in an international court" ~ 1,
+    .$T1_Political == "Do not condemn Russia's actions in an international court" ~ 0,
+    .$T1_Political == "" ~ -1
+  )) %>%
+  mutate(T2_Direct = case_when(
+    .$T2_Direct == "Send US troops to Ukraine" ~ 1,
+    .$T2_Direct == "Do not send US troops to Ukraine" ~ 0,
+    .$T2_Direct == "" ~ -1
+  )) %>%
+  mutate(T2_Indirect = case_when(
+    .$T2_Indirect == "Send military resources to Ukrainian troops" ~ 1,
+    .$T2_Indirect == "Do not send military resources to Ukrainian troops" ~ 0,
+    .$T2_Indirect == "" ~ -1
+  )) %>%
+  mutate(T2_Economic = case_when(
+    .$T2_Economic == "Enact economic sanctions on Russia" ~ 1,
+    .$T2_Economic == "Do not enact economic sanctions on Russia" ~ 0,
+    .$T2_Economic == "" ~ -1
+  )) %>%
+  mutate(T2_Political = case_when(
+    .$T2_Political == "Condemn Russia's actions in an international court" ~ 1,
+    .$T2_Political == "Do not condemn Russia's actions in an international court" ~ 0,
+    .$T2_Political == "" ~ -1
+  ))
+
+# General, Threat Response, Etc... should be numeric
+  
+  
+colnames(raw_data)
+
+# Create New Columns/Indexes
+  # Non-Military Index (For each group)
+  # Overall Index (For each group)
+  # Time Spent (For each group)
+  # Militarism Index (Average)
+  # Internationalism Index (Average)
+  # Political Knowledge Index (Total)
+
+
+## Old Analysis
 
 control_group <- data[data$treatment == "T0",]
 treated_group <- data[data$Z == 1,]

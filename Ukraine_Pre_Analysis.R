@@ -254,24 +254,29 @@ indexed_data <- indexed_data %>%
   mutate(Militarism_Index = (Militarism_1 + Militarism_2_reverse)/2) %>%
   mutate(Internationalism_Index = (Internationalism_1 + Internationalism_2_reverse)/2)
 
+# Create full group (consolidate columns)
+full_group <- indexed_data %>%
+  mutate(Treatment = ifelse(is.na(T1_Direct) & is.na(T2_Direct),"T","C")) %>%
+  mutate(TreatmentGroup = ifelse(is.na(T2_Direct),ifelse(is.na(T1_Direct),"C","T1"),"T2")) %>%
+  mutate(Direct = ifelse(is.na(T2_Direct),ifelse(is.na(T1_Direct),Control_Direct,T1_Direct),T2_Direct)) %>%
+  mutate(Indirect = ifelse(is.na(T2_Indirect),ifelse(is.na(T1_Indirect),Control_Indirect,T1_Indirect),T2_Indirect)) %>%
+  mutate(Economic = ifelse(is.na(T2_Economic),ifelse(is.na(T1_Economic),Control_Economic,T1_Economic),T2_Economic)) %>%
+  mutate(Political = ifelse(is.na(T2_Political),ifelse(is.na(T1_Political),Control_Political,T1_Political),T2_Political)) %>%
+  mutate(General = ifelse(is.na(T2_General),ifelse(is.na(T1_General),Control_General,T1_General),T2_General)) %>%
+  mutate(Threat = ifelse(is.na(T2_Threat),ifelse(is.na(T1_Threat),Control_Threat,T1_Threat),T2_Threat)) %>%
+  mutate(Nonmilitary_Index = ifelse(is.na(T2_Nonmilitary_Index),ifelse(is.na(T1_Nonmilitary_Index),Control_Nonmilitary_Index,T1_Nonmilitary_Index),T2_Nonmilitary_Index)) %>%
+  mutate(Overall_Index = ifelse(is.na(T2_Overall_Index),ifelse(is.na(T1_Overall_Index),Control_Overall_Index,T1_Overall_Index),T2_Overall_Index)) %>%
+  mutate(Time_Spent_Index = ifelse(is.na(T2_Time_Spent_Index),ifelse(is.na(T1_Time_Spent_Index),Control_Time_Spent_Index,T1_Time_Spent_Index),T2_Time_Spent_Index))
+
+
 # Create treatment groups
-control_group <- subset(indexed_data, !is.na(Control_Direct))
-t1_group <- subset(indexed_data, !is.na(T1_Direct))
-t2_group <- subset(indexed_data, !is.na(T2_Direct))
+control_group <- subset(full_group, Treatment == "C")
+t_group <- subset(full_group, Treatment == "T")
+t1_group <- subset(full_group, TreatmentGroup == "T1")
+t2_group <- subset(full_group, TreatmentGroup == "T2")
 
-# Create combined treatment group
-t_group <- subset(indexed_data, is.na(Control_Direct))
-t_group <- t_group %>%
-  mutate(T_Direct = ifelse(is.na(T2_Direct),T1_Direct,T2_Direct)) %>%
-  mutate(T_Indirect = ifelse(is.na(T2_Indirect),T1_Indirect,T2_Indirect)) %>%
-  mutate(T_Economic = ifelse(is.na(T2_Economic),T1_Economic,T2_Economic)) %>%
-  mutate(T_Political = ifelse(is.na(T2_Political),T1_Political,T2_Political)) %>%
-  mutate(T_General = ifelse(is.na(T2_General),T1_General,T2_General)) %>%
-  mutate(T_Threat = ifelse(is.na(T2_Threat),T1_Threat,T2_Threat)) %>%
-  mutate(T_Nonmilitary_Index = ifelse(is.na(T2_Nonmilitary_Index),T1_Nonmilitary_Index,T2_Nonmilitary_Index)) %>%
-  mutate(T_Overall_Index = ifelse(is.na(T2_Overall_Index),T1_Overall_Index,T2_Overall_Index)) %>%
-  mutate(T_Time_Spent_Index = ifelse(is.na(T2_Time_Spent_Index),T1_Time_Spent_Index,T2_Time_Spent_Index))
-
+print("Full Group Summary")
+summary(full_group)
 print("Control Group Summary")
 summary(control_group)
 print("Treated Group Summary")
@@ -288,27 +293,44 @@ summary(t2_group)
 
 # Create Main Models
 
+  # Controls
+    # Gender, Age, Ethnicity, Education, Employment, Income
+    # Militarism_Index, Internationalism_Index
+    # Ideology_LR, PoliticalInterest, Knowledge_Index 
+
   # Control vs Treated
+c_vs_t_direct_military <- 
+  lm_robust(
+    general ~ treatment
+    + warfare 
+    + russia,
+    data=subset(data, treatment!="T1")
+  )
     # Direct Military
     # Non-Military
-    # Overall
-    # General
-    # Threat
+    # General Question
+    # Threat Perception
 
   # T1 vs T2
     # Direct Military
     # Non-Military
-    # Overall
-    # General
-    # Threat
+    # General Question
+    # Threat Perception
 
 # Create Appendix Models
   # Control vs Treated
     # Indirect
     # Economic
     # Political
+    # Overall Index
+
+  # T1 vs T2
     # Indirect
+    # Economic
+    # Political
+    # Overall Index
   
+colnames(t2_group)
 
 # Model 1 -- General Treatment
 direct_model_1 <- 

@@ -275,47 +275,179 @@ t_group <- subset(full_group, Treatment == "T")
 t1_group <- subset(full_group, TreatmentGroup == "T1")
 t2_group <- subset(full_group, TreatmentGroup == "T2")
 
-print("Full Group Summary")
-summary(full_group)
-print("Control Group Summary")
-summary(control_group)
-print("Treated Group Summary")
-summary(t_group)
-print("Treatment 1 Group Summary")
-summary(t1_group)
-print("Treatment 2 Group Summary")
-summary(t2_group)  
-
-## Old Analysis Old Analysis Old Analysis Old Analysis Old Analysis Old Analysis
-## Old Analysis Old Analysis Old Analysis Old Analysis Old Analysis Old Analysis
-## Old Analysis Old Analysis Old Analysis Old Analysis Old Analysis Old Analysis
-## Old Analysis Old Analysis Old Analysis Old Analysis Old Analysis Old Analysis
+# print("Full Group Summary")
+# summary(full_group)
+# print("Control Group Summary")
+# summary(control_group)
+# print("Treated Group Summary")
+# summary(t_group)
+# print("Treatment 1 Group Summary")
+# summary(t1_group)
+# print("Treatment 2 Group Summary")
+# summary(t2_group)  
 
 # Create Main Models
 
   # Controls
-    # Gender, Age, Ethnicity, Education, Employment, Income
     # Militarism_Index, Internationalism_Index
-    # Ideology_LR, PoliticalInterest, Knowledge_Index 
+    # Ideology_LR, PoliticalInterest, Knowledge_Index, Time_Spent_Index
+    # Gender, Age, Ethnicity, Education, Employment, Income
 
-  # Control vs Treated
-c_vs_t_direct_military <- 
+# Control vs Treated Models
+
+# Model 1; Control x Treated; Direct Military
+m1_cxt_direct <-
   lm_robust(
-    general ~ treatment
-    + warfare 
-    + russia,
-    data=subset(data, treatment!="T1")
+    Direct ~ Treatment 
+    + Militarism_Index
+    + Internationalism_Index
+    + Ideology_LR
+    + PoliticalInterest
+    + Knowledge_Index
+    + Time_Spent_Index
+    + Gender
+    + Age
+    + Ethnicity
+    + Education
+    + Employment
+    + Income,
+    data=full_group
   )
-    # Direct Military
-    # Non-Military
-    # General Question
-    # Threat Perception
 
-  # T1 vs T2
-    # Direct Military
-    # Non-Military
-    # General Question
-    # Threat Perception
+# Model 2; Control x Treated; Nonmilitary
+m2_cxt_nonmilitary <-
+  lm_robust(
+    Nonmilitary_Index ~ Treatment 
+    + Militarism_Index
+    + Internationalism_Index
+    + Ideology_LR
+    + PoliticalInterest
+    + Knowledge_Index
+    + Time_Spent_Index
+    + Gender
+    + Age
+    + Ethnicity
+    + Education
+    + Employment
+    + Income,
+    data=full_group
+  )
+
+# Model 3; Control x Treated; General
+m3_cxt_general <-
+  lm_robust(
+    General ~ Treatment 
+    + Militarism_Index
+    + Internationalism_Index
+    + Ideology_LR
+    + PoliticalInterest
+    + Knowledge_Index
+    + Time_Spent_Index
+    + Gender
+    + Age
+    + Ethnicity
+    + Education
+    + Employment
+    + Income,
+    data=full_group
+  )
+
+# Model 4; Control x Treated; Threat Perception
+m4_cxt_threat <-
+  lm_robust(
+    Threat ~ Treatment 
+    + Militarism_Index
+    + Internationalism_Index
+    + Ideology_LR
+    + PoliticalInterest
+    + Knowledge_Index
+    + Time_Spent_Index
+    + Gender
+    + Age
+    + Ethnicity
+    + Education
+    + Employment
+    + Income,
+    data=full_group
+  )
+
+# T1 vs T2 Models
+
+# Model 5; T1 x T2; Direct Military
+m5_t1xt2_direct <-
+  lm_robust(
+    Direct ~ TreatmentGroup
+    + Militarism_Index
+    + Internationalism_Index
+    + Ideology_LR
+    + PoliticalInterest
+    + Knowledge_Index
+    + Time_Spent_Index
+    + Gender
+    + Age
+    + Ethnicity
+    + Education
+    + Employment
+    + Income,
+    data=subset(full_group, TreatmentGroup!="C")
+  )
+
+# Model 6; T1 x T2; Nonmilitary
+m6_t1xt2_nonmilitary <-
+  lm_robust(
+    Nonmilitary_Index ~ TreatmentGroup
+    + Militarism_Index
+    + Internationalism_Index
+    + Ideology_LR
+    + PoliticalInterest
+    + Knowledge_Index
+    + Time_Spent_Index
+    + Gender
+    + Age
+    + Ethnicity
+    + Education
+    + Employment
+    + Income,
+    data=subset(full_group, TreatmentGroup!="C")
+  )
+
+# Model 7; T1 x T2; General
+m7_t1xt2_general <-
+  lm_robust(
+    General ~ TreatmentGroup
+    + Militarism_Index
+    + Internationalism_Index
+    + Ideology_LR
+    + PoliticalInterest
+    + Knowledge_Index
+    + Time_Spent_Index
+    + Gender
+    + Age
+    + Ethnicity
+    + Education
+    + Employment
+    + Income,
+    data=subset(full_group, TreatmentGroup!="C")
+  )
+
+# Model 8; T1 x T2; Threat Perception
+m8_t1xt2_threat <-
+  lm_robust(
+    Threat ~ TreatmentGroup
+    + Militarism_Index
+    + Internationalism_Index
+    + Ideology_LR
+    + PoliticalInterest
+    + Knowledge_Index
+    + Time_Spent_Index
+    + Gender
+    + Age
+    + Ethnicity
+    + Education
+    + Employment
+    + Income,
+    data=subset(full_group, TreatmentGroup!="C")
+  )
 
 # Create Appendix Models
   # Control vs Treated
@@ -329,296 +461,12 @@ c_vs_t_direct_military <-
     # Economic
     # Political
     # Overall Index
-  
-colnames(t2_group)
 
-# Model 1 -- General Treatment
-direct_model_1 <- 
-  lm_robust(
-   direct ~ Z,
-    data=data
-    )
 
-indirect_model_1 <- 
-  lm_robust(
-    indirect ~ Z,
-    data=data
-    )
-
-economic_model_1 <- 
-  lm_robust(
-    economic ~ Z,
-    data=data
-    )
-
-political_model_1 <- 
-  lm_robust(
-    political ~ Z,
-    data=data
-    )
-
-general_model_1 <- 
-  lm_robust(
-    general ~ Z,
-    data=data
-    )
-
-# ...Model 1 With Controls
-direct_model_1_c <-
-  lm_robust(
-    direct ~ Z 
-    + warfare 
-    + russia,
-    data=data
-    )
-
-indirect_model_1_c <- 
-  lm_robust(
-    indirect ~ Z 
-    + warfare 
-    + russia,
-    data=data
-    )
-
-economic_model_1_c <- 
-  lm_robust(
-    economic ~ Z 
-    + warfare 
-    + russia,
-    data=data
-    )
-
-political_model_1_c <- 
-  lm_robust(
-    political ~ Z 
-    + warfare 
-    + russia,
-    data=data
-    )
-
-general_model_1_c <- 
-  lm_robust(
-    general ~ Z 
-    + warfare 
-    + russia,
-    data=data
-    )
-
-# Model 2 -- Treatment 1 Only
-direct_model_2 <- 
-  lm_robust(
-    direct ~ treatment,
-    data=subset(data, treatment!="T2")
-  )
-
-indirect_model_2 <- 
-  lm_robust(
-    indirect ~ treatment,
-    data=subset(data, treatment!="T2")
-  )
-
-economic_model_2 <- 
-  lm_robust(
-    economic ~ treatment,
-    data=subset(data, treatment!="T2")
-  )
-
-political_model_2 <- 
-  lm_robust(
-    political ~ treatment,
-    data=subset(data, treatment!="T2")
-  )
-
-general_model_2 <- 
-  lm_robust(
-    general ~ treatment,
-    data=subset(data, treatment!="T2")
-  )
-
-# Model 2 With Controls
-direct_model_2_c <- 
-  lm_robust(
-    direct ~ treatment
-    + warfare 
-    + russia,
-    data=subset(data, treatment!="T2")
-  )
-
-indirect_model_2_c <- 
-  lm_robust(
-    indirect ~ treatment
-    + warfare 
-    + russia,
-    data=subset(data, treatment!="T2")
-  )
-
-economic_model_2_c <- 
-  lm_robust(
-    economic ~ treatment
-    + warfare 
-    + russia,
-    data=subset(data, treatment!="T2")
-  )
-
-political_model_2_c <- 
-  lm_robust(
-    political ~ treatment
-    + warfare 
-    + russia,
-    data=subset(data, treatment!="T2")
-  )
-
-general_model_2_c <- 
-  lm_robust(
-    general ~ treatment
-    + warfare 
-    + russia,
-    data=subset(data, treatment!="T2")
-  )
-
-# Model 3 -- Treatment 2 Only
-direct_model_3 <- 
-  lm_robust(
-    direct ~ treatment,
-    data=subset(data, treatment!="T1")
-  )
-
-indirect_model_3 <- 
-  lm_robust(
-    indirect ~ treatment,
-    data=subset(data, treatment!="T1")
-  )
-
-economic_model_3 <- 
-  lm_robust(
-    economic ~ treatment,
-    data=subset(data, treatment!="T1")
-  )
-
-political_model_3 <- 
-  lm_robust(
-    political ~ treatment,
-    data=subset(data, treatment!="T1")
-  )
-
-general_model_3 <- 
-  lm_robust(
-    general ~ treatment,
-    data=subset(data, treatment!="T1")
-  )
-
-# Model 3 With Controls
-direct_model_3_c <- 
-  lm_robust(
-    direct ~ treatment
-    + warfare 
-    + russia,
-    data=subset(data, treatment!="T1")
-  )
-
-indirect_model_3_c <- 
-  lm_robust(
-    indirect ~ treatment
-    + warfare 
-    + russia,
-    data=subset(data, treatment!="T1")
-  )
-
-economic_model_3_c <- 
-  lm_robust(
-    economic ~ treatment
-    + warfare 
-    + russia,
-    data=subset(data, treatment!="T1")
-  )
-
-political_model_3_c <- 
-  lm_robust(
-    political ~ treatment
-    + warfare 
-    + russia,
-    data=subset(data, treatment!="T1")
-  )
-
-general_model_3_c <- 
-  lm_robust(
-    general ~ treatment
-    + warfare 
-    + russia,
-    data=subset(data, treatment!="T1")
-  )
-
-# Model 4 -- Treatment 1 vs Treatment 2
-direct_model_4 <- 
-  lm_robust(
-    direct ~ treatment,
-    data=subset(data, treatment!="T0")
-  )
-
-indirect_model_4 <- 
-  lm_robust(
-    indirect ~ treatment,
-    data=subset(data, treatment!="T0")
-  )
-
-economic_model_4 <- 
-  lm_robust(
-    economic ~ treatment,
-    data=subset(data, treatment!="T0")
-  )
-
-political_model_4 <- 
-  lm_robust(
-    political ~ treatment,
-    data=subset(data, treatment!="T0")
-  )
-
-general_model_4 <- 
-  lm_robust(
-    general ~ treatment,
-    data=subset(data, treatment!="T0")
-  )
-
-# Model 3 With Controls
-direct_model_4_c <- 
-  lm_robust(
-    direct ~ treatment
-    + warfare 
-    + russia,
-    data=subset(data, treatment!="T0")
-  )
-
-indirect_model_4_c <- 
-  lm_robust(
-    indirect ~ treatment
-    + warfare 
-    + russia,
-    data=subset(data, treatment!="T0")
-  )
-
-economic_model_4_c <- 
-  lm_robust(
-    economic ~ treatment
-    + warfare 
-    + russia,
-    data=subset(data, treatment!="T0")
-  )
-
-political_model_4_c <- 
-  lm_robust(
-    political ~ treatment
-    + warfare 
-    + russia,
-    data=subset(data, treatment!="T0")
-  )
-
-general_model_4_c <- 
-  lm_robust(
-    general ~ treatment
-    + warfare 
-    + russia,
-    data=subset(data, treatment!="T0")
-  )
+## Old Analysis Old Analysis Old Analysis Old Analysis Old Analysis Old Analysis
+## Old Analysis Old Analysis Old Analysis Old Analysis Old Analysis Old Analysis
+## Old Analysis Old Analysis Old Analysis Old Analysis Old Analysis Old Analysis
+## Old Analysis Old Analysis Old Analysis Old Analysis Old Analysis Old Analysis
 
 # Generate Regression Output...
 # Check coefficient names

@@ -76,10 +76,6 @@ raw_data <- raw_data %>%
     T2_Threat = Q62_1,
   )
 
-colnames(raw_data)
-
-nrow(raw_data)
-
 # Drop Unusable Rows
   # Non Consent | Under 18 | Failed Attention Check
 clean_data <- raw_data %>% subset(Consent != "I don't agree" & 
@@ -281,17 +277,19 @@ indexed_data <- indexed_data %>%
   mutate(Militarism_Index = Militarism_1 + Militarism_2_reverse) %>%
   mutate(Internationalism_Index = Internationalism_1 + Internationalism_2_reverse)
 
+
+# Create mean effects indexes for outcomes
 # Create an index for non-military outcomes
 indexed_data <- indexed_data %>%
-  mutate(Control_Nonmilitary_Index = (Control_Economic + Control_Political)/2) %>%
-  mutate(T1_Nonmilitary_Index = (T1_Economic + T1_Political)/2) %>%
-  mutate(T2_Nonmilitary_Index = (T2_Economic + T2_Political)/2)
+  mutate(Control_Nonmilitary_Index = Control_Economic + Control_Political) %>%
+  mutate(T1_Nonmilitary_Index = T1_Economic + T1_Political) %>%
+  mutate(T2_Nonmilitary_Index = T2_Economic + T2_Political)
 
 # Create an index for overall outcome
 indexed_data <- indexed_data %>%
-  mutate(Control_Overall_Index = (Control_Direct + Control_Indirect + Control_Economic + Control_Political)/4) %>% 
-  mutate(T1_Overall_Index = (T1_Direct + T1_Indirect + T1_Economic + T1_Political)/4) %>%
-  mutate(T2_Overall_Index = (T2_Direct + T2_Indirect + T2_Economic + T2_Political)/4)
+  mutate(Control_Overall_Index = Control_Direct + Control_Indirect + Control_Economic + Control_Political) %>% 
+  mutate(T1_Overall_Index = T1_Direct + T1_Indirect + T1_Economic + T1_Political) %>%
+  mutate(T2_Overall_Index = T2_Direct + T2_Indirect + T2_Economic + T2_Political)
 
 # Create an index for time spent
 indexed_data <- indexed_data %>%
@@ -299,10 +297,10 @@ indexed_data <- indexed_data %>%
   mutate(T1_Time_Spent_Index = T1_Page_Submit) %>%
   mutate(T2_Time_Spent_Index = T2_Page_Submit)
 
-
 # Create full group (consolidate columns)
 full_group <- indexed_data %>%
   mutate(Treatment = ifelse(is.na(T1_Direct) & is.na(T2_Direct),"T","C")) %>%
+  mutate(Z = ifelse(is.na(T1_Direct) & is.na(T2_Direct),1,0)) %>%
   mutate(TreatmentGroup = ifelse(is.na(T2_Direct),ifelse(is.na(T1_Direct),"C","T1"),"T2")) %>%
   mutate(Direct = ifelse(is.na(T2_Direct),ifelse(is.na(T1_Direct),Control_Direct,T1_Direct),T2_Direct)) %>%
   mutate(Indirect = ifelse(is.na(T2_Indirect),ifelse(is.na(T1_Indirect),Control_Indirect,T1_Indirect),T2_Indirect)) %>%
@@ -313,6 +311,41 @@ full_group <- indexed_data %>%
   mutate(Nonmilitary_Index = ifelse(is.na(T2_Nonmilitary_Index),ifelse(is.na(T1_Nonmilitary_Index),Control_Nonmilitary_Index,T1_Nonmilitary_Index),T2_Nonmilitary_Index)) %>%
   mutate(Overall_Index = ifelse(is.na(T2_Overall_Index),ifelse(is.na(T1_Overall_Index),Control_Overall_Index,T1_Overall_Index),T2_Overall_Index)) %>%
   mutate(Time_Spent_Index = ifelse(is.na(T2_Time_Spent_Index),ifelse(is.na(T1_Time_Spent_Index),Control_Time_Spent_Index,T1_Time_Spent_Index),T2_Time_Spent_Index))
+
+# Convert to Means Effect Index
+
+# Adapted From Alexander Coppock "10 Things to Know About Multiple Comparisons"
+# https://egap.org/resource/10-things-to-know-about-multiple-comparisons/
+calculate_mean_effects_index <- function(Z, outcome_mat){
+  if(length(Z) != nrow(outcome_mat)) stop("Error: Treatment assignment, outcome matrix require same n!")
+  
+  c_mean <- apply(X = outcome_mat[Z==0,], MARGIN = 2, FUN = mean, na.rm = T)
+  c_sd <- apply(X = outcome_mat[Z==0,], MARGIN = 2, FUN = sd, na.rm = T)
+  z_score <- t(t(sweep(outcome_mat, 2, c_mean))/ c_sd)
+  index_numerator <- rowSums(z_score)
+  n_outcomes <- ncol(outcome_mat)
+  index <- index_numerator/n_outcomes
+  index <-  (index - mean(index[Z==0], na.rm =T))/sd(index[Z==0], na.rm =T)
+  return(index)
+}
+
+subset(full_group, select = c("Direct"))
+full_group
+
+length(full_group$Z)
+length(full_group)
+nrow(full_group$Z)
+full_group$Direct
+calculate_mean_effects_index(full_group$Z,subset(full_group, select = c("Nonmilitary_Index")))
+
+full_group$Direct = calculate_mean_effects_index(full_group$Z,subset(full_group, select = c("Direct")))
+full_group$Indirect = calculate_mean_effects_index(full_group$Z,subset(full_group, select = c("Indirect")))
+full_group$Economic = calculate_mean_effects_index(full_group$Z,subset(full_group, select = c("Economic")))
+full_group$Political = calculate_mean_effects_index(full_group$Z,subset(full_group, select = c("Political"))) 
+full_group$General = calculate_mean_effects_index(full_group$Z,subset(full_group, select = c("General"))) 
+full_group$Threat = calculate_mean_effects_index(full_group$Z,subset(full_group, select = c("Threat"))) 
+full_group$Nonmilitary_Index = calculate_mean_effects_index(full_group$Z,subset(full_group, select = c("Nonmilitary_Index"))) 
+full_group$Overall_Index = calculate_mean_effects_index(full_group$Z,subset(full_group, select = c("Overall_Index"))) 
 
 # Export To CSV
 write.csv(full_group,"indexed_data.csv", row.names = FALSE)

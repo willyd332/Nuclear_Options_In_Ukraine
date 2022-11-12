@@ -39,6 +39,8 @@ m1_cxt_direct <-
     data=full_group
   )
 
+summary(m1_cxt_direct)
+
 # Model 2; Control x Treated; Nonmilitary
 m2_cxt_nonmilitary <-
   lm_robust(

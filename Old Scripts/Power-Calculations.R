@@ -8,7 +8,7 @@ options(xtable.timestamp = "")
 
 
 # KEY ASSUMPTIONS
-COST_PER_RESPONSE = 0.95 #(7.25/12)*1.2 # (Hourly Minimum Wage/Time To Complete) * Commission Fee
+COST_PER_RESPONSE = 0.8 * 1.33 #(7.25/12)*1.2 # (Hourly Minimum Wage/Time To Complete) * Commission Fee
 MAX_N = 1100/COST_PER_RESPONSE # $1000 is max award from Emory
 ALPHA = 0.05
 TREATMENT_1_EFFECT_SIZE = 0.172 # Kertzer & Zeitoff (2017) *See Below
@@ -64,11 +64,9 @@ sims <- 500
 for (j in 1:length(possible.ns)){
   N <- possible.ns[j]
   # P-Values and Coefficient Containers
-  p.T1vsC <- rep(NA, sims) # Treatment 1 vs Control [P-Value]
-  p.T2vsC <- rep(NA, sims) # Treatment 2 vs Control [P-Value]
+  p.TvsC <- rep(NA, sims) # Treatment 1 vs Control [P-Value]
   p.T2vsT1 <- rep(NA, sims) # Treatment 2 vs Treatment 1 [P-Value]
-  c.T1vsC <- rep(NA, sims)  # Treatment 1 vs Control [Coefficient]
-  c.T2vsC <- rep(NA, sims)  # Treatment 2 vs Control [Coefficient]
+  c.TvsC <- rep(NA, sims)  # Treatment 1 vs Control [Coefficient]
   c.T2vsT1 <- rep(NA, sims) # Treatment 1 vs Control [Coefficient]
   #### Inner loop to conduct experiments "sims" times over for each N ####
   for (i in 1:sims){
@@ -80,37 +78,33 @@ for (j in 1:length(possible.ns)){
     Z.sim <- complete_ra(N=N, num_arms=3) # Assigns to treatment groups randomly
     Y.sim <- Y0*(Z.sim=="T3") + Y1*(Z.sim=="T1") + Y2*(Z.sim=="T2") # Outcomes based on groups (T3 is control)
     frame.sim <- data.frame(Y.sim, Z.sim) # Place in DF
-    fit.T1vsC.sim <- lm(Y.sim ~ Z.sim=="T1", data=subset(frame.sim, Z.sim!="T2")) # Treatment 1 vs Control
-    fit.T2vsC.sim <- lm(Y.sim ~ Z.sim=="T2", data=subset(frame.sim, Z.sim!="T1")) # Treatment 2 vs Control
-    fit.T2vsT1.sim <- lm(Y.sim ~ Z.sim=="T2", data=subset(frame.sim, Z.sim!="T3")) # Treatment 2 vs Treatment 1
+    frame.sim <- frame.sim %>%
+      mutate(T.sim = case_when(   # Variable for above median income
+        .$Z.sim == "T1" ~ "T",
+        .$Z.sim == "T2" ~ "T", # Only exists in test data
+        TRUE ~ "C",
+      ))
+    rapply(T.sim,function(x) ifelse(x=="T3","T3","T"), how = "replace")
+    fit.TvsC.sim <- lm_robust(Y.sim ~ T.sim, frame.sim) # Treatment 1 vs Control
+    fit.T2vsT1.sim <- lm_robust(Y.sim ~ Z.sim=="T2", data=subset(frame.sim, Z.sim!="T3")) # Treatment 2 vs Treatment 1
     ### Need to capture coefficients and pvalues (one-tailed tests, so signs are important)
-    c.T1vsC[i] <- summary(fit.T1vsC.sim)$coefficients[2,1] # Get Coefficient
-    c.T2vsC[i] <- summary(fit.T2vsC.sim)$coefficients[2,1] # Get Coefficient
+    c.TvsC[i] <- summary(fit.TvsC.sim)$coefficients[2,1] # Get Coefficient
     c.T2vsT1[i] <- summary(fit.T2vsT1.sim)$coefficients[2,1] # Get Coefficient
-    p.T1vsC[i] <- summary(fit.T1vsC.sim)$coefficients[2,4] # Get P-Value
-    p.T2vsC[i] <- summary(fit.T2vsC.sim)$coefficients[2,4] # Get P-Value
+    p.TvsC[i] <- summary(fit.TvsC.sim)$coefficients[2,4] # Get P-Value
     p.T2vsT1[i] <- summary(fit.T2vsT1.sim)$coefficients[2,4] # Get P-Value
   }
   # The proportion of experiments where the effect of either T1 or T2 is > 0
-  # and at least one is significant (alpha/2 cause Bonferroni Correction)
-  power.atleastone[j] <- mean(c.T1vsC>0 & c.T2vsC>0 & (p.T1vsC < alpha/2 | p.T2vsC < alpha/2))
-  # The proportion of experiments where the effect of either T1 or T2 is > 0
   # and both are significant (alpha/2 cause Bonferroni Correction)
-  power.bothtreatments[j] <- mean(c.T1vsC>0 & c.T2vsC>0 & p.T1vsC < alpha/2 & p.T2vsC < alpha/2)
+  power.bothtreatments[j] <- mean(c.TvsC>0 & p.TvsC < alpha/2)
   # The proportion of experiments where T1 vs T2 is > 0
   # and is significant (alpha/2 cause Bonferroni Correction)
   power.treatmentvtreatment[j]<- mean(c.T2vsT1 > 0 & p.T2vsT1 < alpha/2)
-  # The proportion of experiments where the effect of either T1 or T2 is > 0
-  # and all are significant (alpha/2 cause Bonferroni Correction)
-  power.fullranking[j] <- mean(c.T1vsC>0 & c.T2vsC>0 & c.T2vsT1 > 0 & p.T1vsC < alpha/2 & p.T2vsT1 < alpha/2)
 }
 
 multiple_treatment_powers_df = data.frame(
   N = possible.ns,
-  "Power: At Least One" = power.atleastone,
-  "Power: Both Treatments" = power.bothtreatments,
-  "Power: T1 vs T2" = power.treatmentvtreatment,
-  "Power: Full Ranking" = power.fullranking,
+  "Power-Treatment" = power.bothtreatments,
+  "Power-T1vsT2" = power.treatmentvtreatment,
   "Cost" = possible.ns * COST_PER_RESPONSE
 )
 

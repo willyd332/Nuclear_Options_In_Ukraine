@@ -329,15 +329,6 @@ calculate_mean_effects_index <- function(Z, outcome_mat){
   return(index)
 }
 
-subset(full_group, select = c("Direct"))
-full_group
-
-length(full_group$Z)
-length(full_group)
-nrow(full_group$Z)
-full_group$Direct
-calculate_mean_effects_index(full_group$Z,subset(full_group, select = c("Nonmilitary_Index")))
-
 full_group$Direct = calculate_mean_effects_index(full_group$Z,subset(full_group, select = c("Direct")))
 full_group$Indirect = calculate_mean_effects_index(full_group$Z,subset(full_group, select = c("Indirect")))
 full_group$Economic = calculate_mean_effects_index(full_group$Z,subset(full_group, select = c("Economic")))

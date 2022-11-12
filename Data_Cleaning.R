@@ -83,8 +83,7 @@ nrow(raw_data)
 # Drop Unusable Rows
   # Non Consent | Under 18 | Failed Attention Check
 clean_data <- raw_data %>% subset(Consent != "I don't agree" & 
-                                    Age != "Less than 18 years old" & 
-                                    AttentionCheck == "3")
+                                    Age != "Less than 18 years old")
 
 # !!! Delete For Real Analysis !!! Delete For Real Analysis !!! Delete For Real Analysis !!!
 clean_data <- raw_data
@@ -107,7 +106,7 @@ clean_data$T2_Page_Submit <- as.numeric(clean_data$T2_Page_Submit)
 
 clean_data$Ideology_LR <- as.numeric(clean_data$Ideology_LR)
 
-  # Convert Main Outcomes
+# Convert Main Outcomes to binary 1-0s where 1 is taking the action and 0 is no action.
 clean_data <- clean_data %>%
   mutate(Control_Direct = case_when(
     .$Control_Direct == "Send US troops to Ukraine" ~ 1,
@@ -170,38 +169,38 @@ clean_data <- clean_data %>%
     .$T2_Political == "" ~ NaN
   ))
 
-# Convert Military/Internationalism To Numeric
+# Code Military/Internationalism to a 3 point scale.
 clean_data <- clean_data %>%
   mutate(Militarism_1 = case_when(
-    .$Militarism_1 == "Strongly agree" ~ 2,
+    .$Militarism_1 == "Strongly agree" ~ 1,
     .$Militarism_1 == "Somewhat agree" ~ 1,
     .$Militarism_1 == "Neither agree nor disagree" ~ 0,
     .$Militarism_1 == "Somewhat disagree" ~ -1,
-    .$Militarism_1 == "Strongly disagree" ~ -2,
+    .$Militarism_1 == "Strongly disagree" ~ -1,
   )) %>%
   mutate(Militarism_2_reverse = case_when(
-    .$Militarism_2_reverse == "Strongly agree" ~ -2,
+    .$Militarism_2_reverse == "Strongly agree" ~ -1,
     .$Militarism_2_reverse == "Somewhat agree" ~ -1,
     .$Militarism_2_reverse == "Neither agree nor disagree" ~ 0,
     .$Militarism_2_reverse == "Somewhat disagree" ~ 1,
-    .$Militarism_2_reverse == "Strongly disagree" ~ 2,
+    .$Militarism_2_reverse == "Strongly disagree" ~ 1,
   )) %>%
   mutate(Internationalism_1 = case_when(
-    .$Internationalism_1 == "Strongly agree" ~ 2,
+    .$Internationalism_1 == "Strongly agree" ~ 1,
     .$Internationalism_1 == "Somewhat agree" ~ 1,
     .$Internationalism_1 == "Neither agree nor disagree" ~ 0,
     .$Internationalism_1 == "Somewhat disagree" ~ -1,
-    .$Internationalism_1 == "Strongly disagree" ~ -2,
+    .$Internationalism_1 == "Strongly disagree" ~ -1,
   )) %>%
   mutate(Internationalism_2_reverse = case_when(
-    .$Internationalism_2_reverse == "Strongly agree" ~ -2,
+    .$Internationalism_2_reverse == "Strongly agree" ~ -1,
     .$Internationalism_2_reverse == "Somewhat agree" ~ -1,
     .$Internationalism_2_reverse == "Neither agree nor disagree" ~ 0,
     .$Internationalism_2_reverse == "Somewhat disagree" ~ 1,
-    .$Internationalism_2_reverse == "Strongly disagree" ~ 2,
+    .$Internationalism_2_reverse == "Strongly disagree" ~ 1,
   ))
   
-# Convert Political Knowledge To Numeric
+# Convert Political Knowledge To Numeric values
 clean_data <- clean_data %>%
   mutate(KnowledgeTest_Conservative = case_when(
     .$KnowledgeTest_Conservative == "Republicans" ~ 1,
@@ -220,14 +219,67 @@ clean_data <- clean_data %>%
     TRUE ~ 0,
   ))
 
-# Create an index for political knowledge
-indexed_data <- clean_data 
+# Code Other Dummy Variables
+clean_data <- clean_data %>%
+  mutate(Gender = case_when(   # Variable For Male
+    .$Gender == "Male" ~ 1,
+    TRUE ~ 0,
+  )) %>%
+  mutate(Ethnicity = case_when(   # Variable for Caucasian
+    .$Ethnicity == "White / Caucasian" ~ 1,
+    TRUE ~ 0,
+  )) %>%
+  mutate(Education = case_when(   # Variable for College
+    .$Education == "Bachelor’s degree" ~ 1,
+    .$Education == "Master’s degree or above" ~ 1,
+    TRUE ~ 0,
+  )) %>%
+  mutate(Employment = case_when(   # Variable for employed
+    .$Employment == "Full-time" ~ 1,
+    .$Employment == "Part-time" ~ 1,
+    .$Employment == "Contract/ Temporary" ~ 1,
+    TRUE ~ 0,
+  )) %>%
+  mutate(Income = case_when(   # Variable for above median income
+    .$Income == "$70,000 - $100,000" ~ 1,
+    .$Income == "$50,000 - $100,000" ~ 1, # Only exists in test data
+    .$Income == "$100,000 - $200,000" ~ 1,
+    .$Income == "More than $200,000" ~ 1,
+    TRUE ~ 0,
+  )) %>%
+  mutate(PoliticalInterest = case_when(   # Variable for interested in politics
+    .$PoliticalInterest == "Very interested" ~ 1,
+    .$PoliticalInterest == "Somewhat interested" ~ 1,
+    TRUE ~ 0,
+  )) %>%
+  mutate(Age = case_when(   # Variable for interested in politics
+    .$Age == "Prefer not to say" ~ "25-34 years old",
+    TRUE ~ .$Age,
+  ))
+
+
+# Create Indexes ---------------------------------------------------------------------------------
+indexed_data <- clean_data
+
+# Create an index for political knowledge normalizing scores
 indexed_data <- indexed_data %>%
-  mutate(Knowledge_Index =
-           (KnowledgeTest_Conservative +
+  mutate(Knowledge_Score =
+           KnowledgeTest_Conservative +
            KnowledgeTest_NATO +
            KnowledgeTest_UK +
-           KnowledgeTest_Zelensky) / 4)
+           KnowledgeTest_Zelensky) %>%
+  mutate(Knowledge_Index = (Knowledge_Score - min(.$Knowledge_Score))/(max(.$Knowledge_Score) - min(.$Knowledge_Score)))
+
+# Create an index for political ideology normalizing scores
+indexed_data <- indexed_data %>%
+  mutate(Ideology_LR = replace_na(.$Ideology_LR, 5))%>%
+  mutate(Ideology_Index = (Ideology_LR - min(.$Ideology_LR))/(max(.$Ideology_LR) - min(.$Ideology_LR)))
+
+# Create an index for militarism and internationalism.
+# The more positive, the more militaristic/internationalist
+indexed_data <- indexed_data %>%
+  mutate(Militarism_Index = Militarism_1 + Militarism_2_reverse) %>%
+  mutate(Internationalism_Index = Internationalism_1 + Internationalism_2_reverse)
 
 # Create an index for non-military outcomes
 indexed_data <- indexed_data %>%
@@ -243,14 +295,10 @@ indexed_data <- indexed_data %>%
 
 # Create an index for time spent
 indexed_data <- indexed_data %>%
-  mutate(Control_Time_Spent_Index = Control_Page_Submit - Control_First_Click) %>%
-  mutate(T1_Time_Spent_Index = T1_Page_Submit - T1_First_Click) %>%
-  mutate(T2_Time_Spent_Index = T2_Page_Submit - T2_First_Click)
+  mutate(Control_Time_Spent_Index = Control_Page_Submit) %>%
+  mutate(T1_Time_Spent_Index = T1_Page_Submit) %>%
+  mutate(T2_Time_Spent_Index = T2_Page_Submit)
 
-# Create an index for militarism and internationalism
-indexed_data <- indexed_data %>%
-  mutate(Militarism_Index = (Militarism_1 + Militarism_2_reverse)/2) %>%
-  mutate(Internationalism_Index = (Internationalism_1 + Internationalism_2_reverse)/2)
 
 # Create full group (consolidate columns)
 full_group <- indexed_data %>%
@@ -268,377 +316,4 @@ full_group <- indexed_data %>%
 
 # Export To CSV
 write.csv(full_group,"indexed_data.csv", row.names = FALSE)
-
-# # Create treatment groups
-# control_group <- subset(full_group, Treatment == "C")
-# t_group <- subset(full_group, Treatment == "T")
-# t1_group <- subset(full_group, TreatmentGroup == "T1")
-# t2_group <- subset(full_group, TreatmentGroup == "T2")
-
-# print("Full Group Summary")
-# summary(full_group)
-# print("Control Group Summary")
-# summary(control_group)
-# print("Treated Group Summary")
-# summary(t_group)
-# print("Treatment 1 Group Summary")
-# summary(t1_group)
-# print("Treatment 2 Group Summary")
-# summary(t2_group)  
-
-# Create Main Models
-
-  # Controls
-    # Militarism_Index, Internationalism_Index
-    # Ideology_LR, PoliticalInterest, Knowledge_Index, Time_Spent_Index
-    # Gender, Age, Ethnicity, Education, Employment, Income
-
-# Control vs Treated Models
-
-# Model 1; Control x Treated; Direct Military
-m1_cxt_direct <-
-  lm_robust(
-    Direct ~ Treatment 
-    + Militarism_Index
-    + Internationalism_Index
-    + Ideology_LR
-    + PoliticalInterest
-    + Knowledge_Index
-    + Time_Spent_Index
-    + Gender
-    + Age
-    + Ethnicity
-    + Education
-    + Employment
-    + Income,
-    data=full_group
-  )
-
-# Model 2; Control x Treated; Nonmilitary
-m2_cxt_nonmilitary <-
-  lm_robust(
-    Nonmilitary_Index ~ Treatment 
-    + Militarism_Index
-    + Internationalism_Index
-    + Ideology_LR
-    + PoliticalInterest
-    + Knowledge_Index
-    + Time_Spent_Index
-    + Gender
-    + Age
-    + Ethnicity
-    + Education
-    + Employment
-    + Income,
-    data=full_group
-  )
-
-# Model 3; Control x Treated; General
-m3_cxt_general <-
-  lm_robust(
-    General ~ Treatment 
-    + Militarism_Index
-    + Internationalism_Index
-    + Ideology_LR
-    + PoliticalInterest
-    + Knowledge_Index
-    + Time_Spent_Index
-    + Gender
-    + Age
-    + Ethnicity
-    + Education
-    + Employment
-    + Income,
-    data=full_group
-  )
-
-# Model 4; Control x Treated; Threat Perception
-m4_cxt_threat <-
-  lm_robust(
-    Threat ~ Treatment 
-    + Militarism_Index
-    + Internationalism_Index
-    + Ideology_LR
-    + PoliticalInterest
-    + Knowledge_Index
-    + Time_Spent_Index
-    + Gender
-    + Age
-    + Ethnicity
-    + Education
-    + Employment
-    + Income,
-    data=full_group
-  )
-
-# T1 vs T2 Models
-
-# Model 5; T1 x T2; Direct Military
-m5_t1xt2_direct <-
-  lm_robust(
-    Direct ~ TreatmentGroup
-    + Militarism_Index
-    + Internationalism_Index
-    + Ideology_LR
-    + PoliticalInterest
-    + Knowledge_Index
-    + Time_Spent_Index
-    + Gender
-    + Age
-    + Ethnicity
-    + Education
-    + Employment
-    + Income,
-    data=subset(full_group, TreatmentGroup!="C")
-  )
-
-# Model 6; T1 x T2; Nonmilitary
-m6_t1xt2_nonmilitary <-
-  lm_robust(
-    Nonmilitary_Index ~ TreatmentGroup
-    + Militarism_Index
-    + Internationalism_Index
-    + Ideology_LR
-    + PoliticalInterest
-    + Knowledge_Index
-    + Time_Spent_Index
-    + Gender
-    + Age
-    + Ethnicity
-    + Education
-    + Employment
-    + Income,
-    data=subset(full_group, TreatmentGroup!="C")
-  )
-
-# Model 7; T1 x T2; General
-m7_t1xt2_general <-
-  lm_robust(
-    General ~ TreatmentGroup
-    + Militarism_Index
-    + Internationalism_Index
-    + Ideology_LR
-    + PoliticalInterest
-    + Knowledge_Index
-    + Time_Spent_Index
-    + Gender
-    + Age
-    + Ethnicity
-    + Education
-    + Employment
-    + Income,
-    data=subset(full_group, TreatmentGroup!="C")
-  )
-
-# Model 8; T1 x T2; Threat Perception
-m8_t1xt2_threat <-
-  lm_robust(
-    Threat ~ TreatmentGroup
-    + Militarism_Index
-    + Internationalism_Index
-    + Ideology_LR
-    + PoliticalInterest
-    + Knowledge_Index
-    + Time_Spent_Index
-    + Gender
-    + Age
-    + Ethnicity
-    + Education
-    + Employment
-    + Income,
-    data=subset(full_group, TreatmentGroup!="C")
-  )
-
-# Create Appendix Models
-  # Control vs Treated
-    # Indirect
-    # Economic
-    # Political
-    # Overall Index
-
-  # T1 vs T2
-    # Indirect
-    # Economic
-    # Political
-    # Overall Index
-
-
-## Old Analysis Old Analysis Old Analysis Old Analysis Old Analysis Old Analysis
-## Old Analysis Old Analysis Old Analysis Old Analysis Old Analysis Old Analysis
-## Old Analysis Old Analysis Old Analysis Old Analysis Old Analysis Old Analysis
-## Old Analysis Old Analysis Old Analysis Old Analysis Old Analysis Old Analysis
-
-# Generate Regression Output...
-# Check coefficient names
-texreg(list(direct_model_1, direct_model_1_c, 
-            direct_model_2, direct_model_2_c, 
-            direct_model_3, direct_model_3_c, 
-            direct_model_4, direct_model_4_c),
-       include.ci = FALSE,
-       digits = 3)
-
-
-# Generate Custom Outputs
-texreg(list(direct_model_1, direct_model_1_c, 
-            direct_model_2, direct_model_2_c, 
-            direct_model_3, direct_model_3_c, 
-            direct_model_4, direct_model_4_c),
-        custom.coef.names = c(
-          "Intercept",
-          "Z",
-          "+ Military Assertiveness",
-          "+ Internationalism",
-          "Treatment 1",
-          "Treatment 2"
-        ),
-        digits = 4,
-        stars = c(0.001, 0.01, 0.05),
-        custom.note = "%stars. Robust standard errors are in parentheses.",
-        reorder.coef = c(1, 2, 5, 6, 3, 4),
-        custom.model.names = c("T1 or T2","control","T1","control","T2","control","T1 vs T2","control"),
-        include.ci = FALSE,
-        caption = "DIRECT WARFARE",
-        caption.above = TRUE,
-        # include.adjrs = FALSE,
-        # include.rmse = FALSE,
-        dcolumn = TRUE,
-        booktabs = TRUE,
-        sideways = TRUE,
-        scalebox = 0.85,
-        float.pos = "t",
-        use.packages = FALSE,
-        # table = FALSE,
-        file = "./regression_outputs/direct_warfare.tex"
-)
-
-texreg(list(indirect_model_1, indirect_model_1_c, 
-            indirect_model_2, indirect_model_2_c, 
-            indirect_model_3, indirect_model_3_c, 
-            indirect_model_4, indirect_model_4_c),
-       custom.coef.names = c(
-         "Intercept",
-         "Z",
-         "+ Military Assertiveness",
-         "+ Internationalism",
-          "Treatment 1",           "Treatment 2"
-       ),
-       digits = 4,
-       stars = c(0.001, 0.01, 0.05),
-       custom.note = "%stars. Robust standard errors are in parentheses.",
-       reorder.coef = c(1, 2, 5, 6, 3, 4),
-       custom.model.names = c("T1 or T2","control","T1","control","T2","control","T1 vs T2","control"),
-       include.ci = FALSE,
-       caption = "INDIRECT AID",
-       caption.above = TRUE,
-       # include.adjrs = FALSE,
-       # include.rmse = FALSE,
-       dcolumn = TRUE,
-       booktabs = TRUE,
-       sideways = TRUE,
-       scalebox = 0.85,
-       float.pos = "t",
-       use.packages = FALSE,
-       # table = FALSE,
-       file = "./regression_outputs/indirect_aid.tex"
-)
-
-
-texreg(list(economic_model_1, economic_model_1_c, 
-            economic_model_2, economic_model_2_c, 
-            economic_model_3, economic_model_3_c, 
-            economic_model_4, economic_model_4_c),
-       custom.coef.names = c(
-         "Intercept",
-         "Z",
-         "+ Military Assertiveness",
-         "+ Internationalism",
-         "Treatment 1",
-         "Treatment 2"
-       ),
-       digits = 4,
-       stars = c(0.001, 0.01, 0.05),
-       custom.note = "%stars. Robust standard errors are in parentheses.",
-       reorder.coef = c(1, 2, 5, 6, 3, 4),
-       custom.model.names = c("T1 or T2","control","T1","control","T2","control","T1 vs T2","control"),
-       include.ci = FALSE,
-       caption = "ECONOMIC SANCTIONS",
-       caption.above = TRUE,
-       # include.adjrs = FALSE,
-       # include.rmse = FALSE,
-       dcolumn = TRUE,
-       booktabs = TRUE,
-       sideways = TRUE,
-       scalebox = 0.85,
-       float.pos = "t",
-       use.packages = FALSE,
-       # table = FALSE,
-       file = "./regression_outputs/economic_sanctions.tex"
-)
-
-
-texreg(list(political_model_1, political_model_1_c, 
-            political_model_2, political_model_2_c, 
-            political_model_3, political_model_3_c, 
-            political_model_4, political_model_4_c),
-       custom.coef.names = c(
-         "Intercept",
-         "Z",
-         "+ Military Assertiveness",
-         "+ Internationalism",
-         "Treatment 1",
-         "Treatment 2"
-       ),
-       digits = 4,
-       stars = c(0.001, 0.01, 0.05),
-       custom.note = "%stars. Robust standard errors are in parentheses.",
-       reorder.coef = c(1, 2, 5, 6, 3, 4),
-       custom.model.names = c("T1 or T2","control","T1","control","T2","control","T1 vs T2","control"),
-       include.ci = FALSE,
-       caption = "POLITICAL CONDEMNATION",
-       caption.above = TRUE,
-       # include.adjrs = FALSE,
-       # include.rmse = FALSE,
-       dcolumn = TRUE,
-       booktabs = TRUE,
-       sideways = TRUE,
-       scalebox = 0.85,
-       float.pos = "t",
-       use.packages = FALSE,
-       # table = FALSE,
-       file = "./regression_outputs/political_condemnation.tex"
-)
-
-
-texreg(list(general_model_1, general_model_1_c, 
-            general_model_2, general_model_2_c, 
-            general_model_3, general_model_3_c, 
-            general_model_4, general_model_4_c),
-       custom.coef.names = c(
-         "Intercept",
-         "Z",
-         "+ Military Assertiveness",
-         "+ Internationalism",
-         "Treatment 1",
-         "Treatment 2"
-       ),
-       digits = 4,
-       stars = c(0.001, 0.01, 0.05),
-       custom.note = "%stars. Robust standard errors are in parentheses.",
-       reorder.coef = c(1, 2, 5, 6, 3, 4),
-       custom.model.names = c("T1 or T2","control","T1","control","T2","control","T1 vs T2","control"),
-       include.ci = FALSE,
-       caption = "GENERAL DEGREE OF RESPONSE",
-       caption.above = TRUE,
-       # include.adjrs = FALSE,
-       # include.rmse = FALSE,
-       dcolumn = TRUE,
-       booktabs = TRUE,
-       sideways = TRUE,
-       scalebox = 0.85,
-       float.pos = "t",
-       use.packages = FALSE,
-       # table = FALSE,
-       file = "./regression_outputs/general_response.tex"
-)
-
 

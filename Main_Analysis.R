@@ -16,7 +16,7 @@ full_group <- as_tibble(data)
 
 # Controls
 # Militarism_Index, Internationalism_Index
-# Ideology_LR, PoliticalInterest, Knowledge_Index, Time_Spent_Index
+# Ideology_Index, PoliticalInterest, Knowledge_Index, Time_Spent_Index
 # Gender, Age, Ethnicity, Education, Employment, Income
 
 # Control vs Treated Models
@@ -27,10 +27,9 @@ m1_cxt_direct <-
     Direct ~ Treatment 
     + Militarism_Index
     + Internationalism_Index
-    + Ideology_LR
+    + Ideology_Index
     + PoliticalInterest
     + Knowledge_Index
-    + Time_Spent_Index
     + Gender
     + Age
     + Ethnicity
@@ -46,10 +45,9 @@ m2_cxt_nonmilitary <-
     Nonmilitary_Index ~ Treatment 
     + Militarism_Index
     + Internationalism_Index
-    + Ideology_LR
+    + Ideology_Index
     + PoliticalInterest
     + Knowledge_Index
-    + Time_Spent_Index
     + Gender
     + Age
     + Ethnicity
@@ -65,10 +63,9 @@ m3_cxt_general <-
     General ~ Treatment 
     + Militarism_Index
     + Internationalism_Index
-    + Ideology_LR
+    + Ideology_Index
     + PoliticalInterest
     + Knowledge_Index
-    + Time_Spent_Index
     + Gender
     + Age
     + Ethnicity
@@ -84,10 +81,9 @@ m4_cxt_threat <-
     Threat ~ Treatment 
     + Militarism_Index
     + Internationalism_Index
-    + Ideology_LR
+    + Ideology_Index
     + PoliticalInterest
     + Knowledge_Index
-    + Time_Spent_Index
     + Gender
     + Age
     + Ethnicity
@@ -105,10 +101,9 @@ m5_t1xt2_direct <-
     Direct ~ TreatmentGroup
     + Militarism_Index
     + Internationalism_Index
-    + Ideology_LR
+    + Ideology_Index
     + PoliticalInterest
     + Knowledge_Index
-    + Time_Spent_Index
     + Gender
     + Age
     + Ethnicity
@@ -124,10 +119,9 @@ m6_t1xt2_nonmilitary <-
     Nonmilitary_Index ~ TreatmentGroup
     + Militarism_Index
     + Internationalism_Index
-    + Ideology_LR
+    + Ideology_Index
     + PoliticalInterest
     + Knowledge_Index
-    + Time_Spent_Index
     + Gender
     + Age
     + Ethnicity
@@ -143,10 +137,9 @@ m7_t1xt2_general <-
     General ~ TreatmentGroup
     + Militarism_Index
     + Internationalism_Index
-    + Ideology_LR
+    + Ideology_Index
     + PoliticalInterest
     + Knowledge_Index
-    + Time_Spent_Index
     + Gender
     + Age
     + Ethnicity
@@ -162,10 +155,9 @@ m8_t1xt2_threat <-
     Threat ~ TreatmentGroup
     + Militarism_Index
     + Internationalism_Index
-    + Ideology_LR
+    + Ideology_Index
     + PoliticalInterest
     + Knowledge_Index
-    + Time_Spent_Index
     + Gender
     + Age
     + Ethnicity
@@ -175,6 +167,8 @@ m8_t1xt2_threat <-
     data=subset(full_group, TreatmentGroup!="C")
   )
 
+
+summary(m8_t1xt2_threat)
 
 ## Old Analysis Old Analysis Old Analysis Old Analysis Old Analysis Old Analysis
 ## Old Analysis Old Analysis Old Analysis Old Analysis Old Analysis Old Analysis

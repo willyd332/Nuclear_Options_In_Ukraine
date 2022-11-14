@@ -16,7 +16,7 @@ library(texreg)
 library(tidyverse)
 library(magrittr)
 # Get the data
-data <- read.csv('./1000_Row_Dummy_Qualtrics_Data_Nov-6-2022.csv')
+data <- read.csv('./Final_Data.csv')
 
 raw_data <- as_tibble(data)
 
@@ -80,10 +80,6 @@ raw_data <- raw_data %>%
   # Non Consent | Under 18 | Failed Attention Check
 clean_data <- raw_data %>% subset(Consent != "I don't agree" & 
                                     Age != "Less than 18 years old")
-
-# !!! Delete For Real Analysis !!! Delete For Real Analysis !!! Delete For Real Analysis !!!
-clean_data <- raw_data
-# !!! Delete For Real Analysis !!! Delete For Real Analysis !!! Delete For Real Analysis !!!
 
 # Convert Characters To Numeric
 clean_data$Control_General <- as.numeric(clean_data$Control_General)
@@ -297,10 +293,11 @@ indexed_data <- indexed_data %>%
   mutate(T1_Time_Spent_Index = T1_Page_Submit) %>%
   mutate(T2_Time_Spent_Index = T2_Page_Submit)
 
+
 # Create full group (consolidate columns)
 full_group <- indexed_data %>%
-  mutate(Treatment = ifelse(is.na(T1_Direct) & is.na(T2_Direct),"T","C")) %>%
-  mutate(Z = ifelse(is.na(T1_Direct) & is.na(T2_Direct),1,0)) %>%
+  mutate(Treatment = ifelse(is.na(T1_Direct) & is.na(T2_Direct),"C","T")) %>%
+  mutate(Z = ifelse(Treatment == "C",0,1)) %>%
   mutate(TreatmentGroup = ifelse(is.na(T2_Direct),ifelse(is.na(T1_Direct),"C","T1"),"T2")) %>%
   mutate(Direct = ifelse(is.na(T2_Direct),ifelse(is.na(T1_Direct),Control_Direct,T1_Direct),T2_Direct)) %>%
   mutate(Indirect = ifelse(is.na(T2_Indirect),ifelse(is.na(T1_Indirect),Control_Indirect,T1_Indirect),T2_Indirect)) %>%
@@ -310,7 +307,8 @@ full_group <- indexed_data %>%
   mutate(Threat = ifelse(is.na(T2_Threat),ifelse(is.na(T1_Threat),Control_Threat,T1_Threat),T2_Threat)) %>%
   mutate(Nonmilitary_Index = ifelse(is.na(T2_Nonmilitary_Index),ifelse(is.na(T1_Nonmilitary_Index),Control_Nonmilitary_Index,T1_Nonmilitary_Index),T2_Nonmilitary_Index)) %>%
   mutate(Overall_Index = ifelse(is.na(T2_Overall_Index),ifelse(is.na(T1_Overall_Index),Control_Overall_Index,T1_Overall_Index),T2_Overall_Index)) %>%
-  mutate(Time_Spent_Index = ifelse(is.na(T2_Time_Spent_Index),ifelse(is.na(T1_Time_Spent_Index),Control_Time_Spent_Index,T1_Time_Spent_Index),T2_Time_Spent_Index))
+  mutate(Time_Spent_Index = ifelse(is.na(T2_Time_Spent_Index),ifelse(is.na(T1_Time_Spent_Index),Control_Time_Spent_Index,T1_Time_Spent_Index),T2_Time_Spent_Index)) %>%
+  mutate(Median_Time = ifelse(Time_Spent_Index > 60, 1, 0))
 
 # Convert to Means Effect Index
 
@@ -336,7 +334,8 @@ full_group$Political = calculate_mean_effects_index(full_group$Z,subset(full_gro
 full_group$General = calculate_mean_effects_index(full_group$Z,subset(full_group, select = c("General"))) 
 full_group$Threat = calculate_mean_effects_index(full_group$Z,subset(full_group, select = c("Threat"))) 
 full_group$Nonmilitary_Index = calculate_mean_effects_index(full_group$Z,subset(full_group, select = c("Nonmilitary_Index"))) 
-full_group$Overall_Index = calculate_mean_effects_index(full_group$Z,subset(full_group, select = c("Overall_Index"))) 
+full_group$Overall_Index = calculate_mean_effects_index(full_group$Z,subset(full_group, select = c("Overall_Index")))
+
 
 # Export To CSV
 write.csv(full_group,"indexed_data.csv", row.names = FALSE)

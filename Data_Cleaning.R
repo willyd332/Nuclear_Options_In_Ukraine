@@ -293,22 +293,21 @@ indexed_data <- indexed_data %>%
   mutate(T1_Time_Spent_Index = T1_Page_Submit) %>%
   mutate(T2_Time_Spent_Index = T2_Page_Submit)
 
-
 # Create full group (consolidate columns)
 full_group <- indexed_data %>%
   mutate(Treatment = ifelse(is.na(T1_Direct) & is.na(T2_Direct),"C","T")) %>%
   mutate(Z = ifelse(Treatment == "C",0,1)) %>%
   mutate(TreatmentGroup = ifelse(is.na(T2_Direct),ifelse(is.na(T1_Direct),"C","T1"),"T2")) %>%
-  mutate(Direct = ifelse(is.na(T2_Direct),ifelse(is.na(T1_Direct),Control_Direct,T1_Direct),T2_Direct)) %>%
-  mutate(Indirect = ifelse(is.na(T2_Indirect),ifelse(is.na(T1_Indirect),Control_Indirect,T1_Indirect),T2_Indirect)) %>%
-  mutate(Economic = ifelse(is.na(T2_Economic),ifelse(is.na(T1_Economic),Control_Economic,T1_Economic),T2_Economic)) %>%
-  mutate(Political = ifelse(is.na(T2_Political),ifelse(is.na(T1_Political),Control_Political,T1_Political),T2_Political)) %>%
-  mutate(General = ifelse(is.na(T2_General),ifelse(is.na(T1_General),Control_General,T1_General),T2_General)) %>%
-  mutate(Threat = ifelse(is.na(T2_Threat),ifelse(is.na(T1_Threat),Control_Threat,T1_Threat),T2_Threat)) %>%
-  mutate(Nonmilitary_Index = ifelse(is.na(T2_Nonmilitary_Index),ifelse(is.na(T1_Nonmilitary_Index),Control_Nonmilitary_Index,T1_Nonmilitary_Index),T2_Nonmilitary_Index)) %>%
-  mutate(Overall_Index = ifelse(is.na(T2_Overall_Index),ifelse(is.na(T1_Overall_Index),Control_Overall_Index,T1_Overall_Index),T2_Overall_Index)) %>%
+  mutate(Direct_Raw = ifelse(is.na(T2_Direct),ifelse(is.na(T1_Direct),Control_Direct,T1_Direct),T2_Direct)) %>%
+  mutate(Indirect_Raw = ifelse(is.na(T2_Indirect),ifelse(is.na(T1_Indirect),Control_Indirect,T1_Indirect),T2_Indirect)) %>%
+  mutate(Economic_Raw = ifelse(is.na(T2_Economic),ifelse(is.na(T1_Economic),Control_Economic,T1_Economic),T2_Economic)) %>%
+  mutate(Political_Raw = ifelse(is.na(T2_Political),ifelse(is.na(T1_Political),Control_Political,T1_Political),T2_Political)) %>%
+  mutate(General_Raw = ifelse(is.na(T2_General),ifelse(is.na(T1_General),Control_General,T1_General),T2_General)) %>%
+  mutate(Threat_Raw = ifelse(is.na(T2_Threat),ifelse(is.na(T1_Threat),Control_Threat,T1_Threat),T2_Threat)) %>%
+  mutate(Nonmilitary_Index_Raw = ifelse(is.na(T2_Nonmilitary_Index),ifelse(is.na(T1_Nonmilitary_Index),Control_Nonmilitary_Index,T1_Nonmilitary_Index),T2_Nonmilitary_Index)) %>%
+  mutate(Overall_Index_Raw = ifelse(is.na(T2_Overall_Index),ifelse(is.na(T1_Overall_Index),Control_Overall_Index,T1_Overall_Index),T2_Overall_Index)) %>%
   mutate(Time_Spent_Index = ifelse(is.na(T2_Time_Spent_Index),ifelse(is.na(T1_Time_Spent_Index),Control_Time_Spent_Index,T1_Time_Spent_Index),T2_Time_Spent_Index)) %>%
-  mutate(Median_Time = ifelse(Time_Spent_Index > 60, 1, 0))
+  mutate(Time_Cutoff = ifelse(Time_Spent_Index > 90, 1, 0))
 
 # Convert to Means Effect Index
 
@@ -327,14 +326,14 @@ calculate_mean_effects_index <- function(Z, outcome_mat){
   return(index)
 }
 
-full_group$Direct = calculate_mean_effects_index(full_group$Z,subset(full_group, select = c("Direct")))
-full_group$Indirect = calculate_mean_effects_index(full_group$Z,subset(full_group, select = c("Indirect")))
-full_group$Economic = calculate_mean_effects_index(full_group$Z,subset(full_group, select = c("Economic")))
-full_group$Political = calculate_mean_effects_index(full_group$Z,subset(full_group, select = c("Political"))) 
-full_group$General = calculate_mean_effects_index(full_group$Z,subset(full_group, select = c("General"))) 
-full_group$Threat = calculate_mean_effects_index(full_group$Z,subset(full_group, select = c("Threat"))) 
-full_group$Nonmilitary_Index = calculate_mean_effects_index(full_group$Z,subset(full_group, select = c("Nonmilitary_Index"))) 
-full_group$Overall_Index = calculate_mean_effects_index(full_group$Z,subset(full_group, select = c("Overall_Index")))
+full_group$Direct = calculate_mean_effects_index(full_group$Z,subset(full_group, select = c("Direct_Raw")))
+full_group$Indirect = calculate_mean_effects_index(full_group$Z,subset(full_group, select = c("Indirect_Raw")))
+full_group$Economic = calculate_mean_effects_index(full_group$Z,subset(full_group, select = c("Economic_Raw")))
+full_group$Political = calculate_mean_effects_index(full_group$Z,subset(full_group, select = c("Political_Raw"))) 
+full_group$General = calculate_mean_effects_index(full_group$Z,subset(full_group, select = c("General_Raw"))) 
+full_group$Threat = calculate_mean_effects_index(full_group$Z,subset(full_group, select = c("Threat_Raw"))) 
+full_group$Nonmilitary_Index = calculate_mean_effects_index(full_group$Z,subset(full_group, select = c("Nonmilitary_Index_Raw"))) 
+full_group$Overall_Index = calculate_mean_effects_index(full_group$Z,subset(full_group, select = c("Overall_Index_Raw")))
 
 
 # Export To CSV

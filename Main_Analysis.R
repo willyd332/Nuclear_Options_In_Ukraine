@@ -34,9 +34,10 @@ m1_cxt_direct <-
     + Education
     + Employment
     + Income
-    + Median_Time,
+    + Time_Cutoff,
     data=full_group
   )
+
 
 summary(m1_cxt_direct)
 
@@ -44,6 +45,7 @@ summary(m1_cxt_direct)
 m2_cxt_nonmilitary <-
   lm_robust(
     Nonmilitary_Index ~ Z
+    + Education
     + Militarism_Index
     + Internationalism_Index
     + Ideology_Index
@@ -55,7 +57,7 @@ m2_cxt_nonmilitary <-
     + Education
     + Employment
     + Income
-    + Median_Time,
+    + Time_Cutoff,
     data=full_group
   )
 
@@ -63,6 +65,7 @@ m2_cxt_nonmilitary <-
 m3_cxt_general <-
   lm_robust(
     General ~ Z
+    + Education
     + Militarism_Index
     + Internationalism_Index
     + Ideology_Index
@@ -74,7 +77,7 @@ m3_cxt_general <-
     + Education
     + Employment
     + Income
-    + Median_Time,
+    + Time_Cutoff,
     data=full_group
   )
 
@@ -298,7 +301,7 @@ texreg(list(m1_cxt_direct, m2_cxt_nonmilitary, m3_cxt_general),
          "Time Cutoff"
        ),
        digits = 4,
-       stars = c(0.001, 0.01, 0.05),
+       stars = c(0.01, 0.05, 0.1),
        custom.note = "%stars. Robust standard errors are in parentheses.",
        # reorder.coef = c(1, 2, 5, 6, 3, 4),
        custom.model.names = c("Direct Military","Nonmilitary","General"),
@@ -398,7 +401,7 @@ texreg(list(m5_t1xt2_direct, m6_t1xt2_nonmilitary, m7_t1xt2_general),
        float.pos = "t",
        use.packages = FALSE,
        # table = FALSE,
-       file = "./regression_outputs/t1xt2_responses.tex"
+      file = "./regression_outputs/t1xt2_responses.tex"
 )
 
 # t1xt2 perceived threat

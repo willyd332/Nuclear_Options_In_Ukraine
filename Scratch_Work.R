@@ -14,18 +14,6 @@ prolific_data <- read.csv('./Prolific_Data.csv')
 full_group <- as_tibble(data)
 
 
-summary(full_group$Direct)
-summary(full_group$Indirect)
-summary(full_group$Economic)
-summary(full_group$Political)
-
-# create dummy data
-data <- data.frame(
-  name=letters[1:5],
-  value=sample(seq(4,15),5)
-)
-
-
 mean(full_group$T2_Direct)
 summary(full_group$T2_Indirect)
 summary(full_group$T2_Economic)
@@ -87,9 +75,6 @@ T2_barplot <- barplot(height=mean_T2_outcomes,
 control_barplot
 T1_barplot
 T2_barplot
-
-colnames(full_group)
-
 
 m1_cxt_direct <-
   lm_robust(

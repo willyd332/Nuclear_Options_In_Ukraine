@@ -277,9 +277,9 @@ indexed_data <- indexed_data %>%
 # Create mean effects indexes for outcomes
 # Create an index for non-military outcomes
 indexed_data <- indexed_data %>%
-  mutate(Control_Nonmilitary_Index = Control_Economic + Control_Political) %>%
-  mutate(T1_Nonmilitary_Index = T1_Economic + T1_Political) %>%
-  mutate(T2_Nonmilitary_Index = T2_Economic + T2_Political)
+  mutate(Control_Nonmilitary_Index = Control_Economic + Control_Political + Control_Indirect) %>%
+  mutate(T1_Nonmilitary_Index = T1_Economic + T1_Political + T1_Indirect) %>%
+  mutate(T2_Nonmilitary_Index = T2_Economic + T2_Political + T2_Indirect)
 
 # Create an index for overall outcome
 indexed_data <- indexed_data %>%

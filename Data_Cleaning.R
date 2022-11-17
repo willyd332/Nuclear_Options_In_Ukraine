@@ -273,7 +273,6 @@ indexed_data <- indexed_data %>%
   mutate(Militarism_Index = Militarism_1 + Militarism_2_reverse) %>%
   mutate(Internationalism_Index = Internationalism_1 + Internationalism_2_reverse)
 
-
 # Create mean effects indexes for outcomes
 # Create an index for non-military outcomes
 indexed_data <- indexed_data %>%

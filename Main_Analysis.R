@@ -18,6 +18,7 @@ full_group <- as_tibble(data)
 # Ideology_Index, PoliticalInterest, Knowledge_Index, Time_Spent_Index
 # Gender, Age, Ethnicity, Education, Employment, Income
 
+
 # Control vs Treated Models
 
 # Model 1; Control x Treated; Direct Military
@@ -56,6 +57,8 @@ m2_cxt_nonmilitary <-
     + Time_Cutoff,
     data=full_group
   )
+
+summary(m2_cxt_nonmilitary)
 
 # Model 3; Control x Treated; Overall
 m3_cxt_overall <-
@@ -212,11 +215,11 @@ m8_t1xt2_threat
 
 
 # Testing for significant differences between T1 and T2
-linearHypothesis(m5_t1xt2_direct, c("TreatmentGroupT1 - TreatmentGroupT2 = 0")) # No Difference
-linearHypothesis(m6_t1xt2_nonmilitary, c("TreatmentGroupT1 - TreatmentGroupT2 = 0")) # No Difference
-linearHypothesis(m7_t1xt2_overall, c("TreatmentGroupT1 - TreatmentGroupT2 = 0")) # No Difference
-linearHypothesis(m7b_t1xt2_general, c("TreatmentGroupT1 - TreatmentGroupT2 = 0")) # No Difference
-linearHypothesis(m8_t1xt2_threat, c("TreatmentGroupT1 - TreatmentGroupT2 = 0")) # No Difference
+linearHypothesis(m5_t1xt2_direct, c("TreatmentGroupT1 - TreatmentGroupT2 = 0"), test="F") # No Difference
+linearHypothesis(m6_t1xt2_nonmilitary, c("TreatmentGroupT1 - TreatmentGroupT2 = 0"), test="F") # No Difference
+linearHypothesis(m7_t1xt2_overall, c("TreatmentGroupT1 - TreatmentGroupT2 = 0"), test="F") # No Difference
+linearHypothesis(m7b_t1xt2_general, c("TreatmentGroupT1 - TreatmentGroupT2 = 0"), test="F") # No Difference
+linearHypothesis(m8_t1xt2_threat, c("TreatmentGroupT1 - TreatmentGroupT2 = 0"), test="F") # No Difference
 
 # Generate Regression Output Tables
 
@@ -246,7 +249,7 @@ texreg(list(m1_cxt_direct, m2_cxt_nonmilitary, m3_cxt_overall),
        stars = c(0.01, 0.05, 0.1),
        custom.note = "%stars. Robust standard errors are in parentheses.",
        reorder.coef = c(1,2,3,4,7,6,14,5,8,9,10,11,12,13,15),
-       custom.model.names = c("Direct (1)","Nonmilitary (2)","All Policies  (3)"), # ,"Direct (4)","Nonmilitary (5)","All Policies (6)"),
+       custom.model.names = c("Direct Military (1)","Nonmilitary (2)","All Policies  (3)"), # ,"Direct (4)","Nonmilitary (5)","All Policies (6)"),
        include.ci = FALSE,
        caption = "Policy-Specific US Responses To The War In Ukraine",
        caption.above = TRUE,

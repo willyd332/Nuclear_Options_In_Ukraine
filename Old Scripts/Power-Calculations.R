@@ -3,13 +3,14 @@
 # https://egap.org/resource/script-power-analysis-simulations-in-r/
 library(randomizr)  
 library(xtable)
+library(pwr)
 options(xtable.floating = FALSE)
 options(xtable.timestamp = "")
 
 
 # KEY ASSUMPTIONS
 COST_PER_RESPONSE = 0.8 * 1.33 #(7.25/12)*1.2 # (Hourly Minimum Wage/Time To Complete) * Commission Fee
-MAX_N = 1100/COST_PER_RESPONSE # $1000 is max award from Emory
+MAX_N = 900 # $1000 is max award from Emory
 ALPHA = 0.05
 TREATMENT_1_EFFECT_SIZE = 0.172 # Kertzer & Zeitoff (2017) *See Below
 TREATMENT_2_EFFECT_SIZE = 0.376 # Kertzer & Zeitoff (2017) *See Below
@@ -17,6 +18,16 @@ TARGET_POWER = 0.8
 AVERAGE_OUTCOME = 1.84548 # Kertzer & Zeitoff (2017) *See Below
 STANDARD_DEVIATION = 1.112738 # Kertzer & Zeitoff (2017) *See Below
 possible.ns <- seq(from=300, to=MAX_N, by=100) # The sample sizes we'll be considering
+
+
+
+# New Analysis using pwr package
+
+assumed_effect = 0.5 # Kertzer & Zeitoff (2017) *See Below
+
+pwr.t2n.test(299, 600, assumed_effect, .05)
+
+
 
 # # SIMULATED EXPERIMENT WITH ONE TREATMENT GROUP
 # stopifnot(all( (possible.ns %% 2)==0 )) # require even number of experimental pool

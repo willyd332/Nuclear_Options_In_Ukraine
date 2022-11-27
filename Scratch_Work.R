@@ -34,6 +34,8 @@ prop.table(table(full_group$Education))
 # 0         1 
 # 0.3982202 0.6017798 
 
+prop.table(table(full_group$Gender))
+
 prop.table(table(raw_data$Q5))
 # 0         1 
 # 0.2068966 0.7931034 
@@ -62,8 +64,13 @@ mean_T_outcomes <- c(mean(full_group_T$T_Direct, na.rm=TRUE),
                            mean(full_group_T$T_Economic, na.rm=TRUE),
                            mean(full_group_T$T_Political, na.rm=TRUE))
 
+mean_outcomes <- c(mean(full_group$Direct_Raw, na.rm=TRUE),
+                   mean(full_group$Indirect_Raw, na.rm=TRUE),
+                   mean(full_group$Economic_Raw, na.rm=TRUE),
+                   mean(full_group$Political_Raw, na.rm=TRUE))
 
-names <- c("Direct","Indirect","Economic","Political")
+
+names <- c("Direct Military","Indirect","Economic","Political")
 
 # Make Barplots
 control_barplot <- barplot(height=mean_control_outcomes, 
@@ -81,7 +88,7 @@ T_barplot <- barplot(height=mean_T_outcomes,
                       space=.05,
                       density=c(100,50,50,50),
                       col=c("black"),
-                      main="Treatment Group",
+                      main="Nuclear Rhetoric Group",
                       ylab="Proportion Support",
                       xlab="Policy Option",
                       )

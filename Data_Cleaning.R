@@ -306,7 +306,7 @@ full_group <- indexed_data %>%
   mutate(Nonmilitary_Index_Raw = ifelse(is.na(T2_Nonmilitary_Index),ifelse(is.na(T1_Nonmilitary_Index),Control_Nonmilitary_Index,T1_Nonmilitary_Index),T2_Nonmilitary_Index)) %>%
   mutate(Overall_Index_Raw = ifelse(is.na(T2_Overall_Index),ifelse(is.na(T1_Overall_Index),Control_Overall_Index,T1_Overall_Index),T2_Overall_Index)) %>%
   mutate(Time_Spent_Index = ifelse(is.na(T2_Time_Spent_Index),ifelse(is.na(T1_Time_Spent_Index),Control_Time_Spent_Index,T1_Time_Spent_Index),T2_Time_Spent_Index)) %>%
-  mutate(Time_Cutoff = ifelse(Time_Spent_Index > 90, 1, 0))
+  mutate(Time_Cutoff = ifelse(Time_Spent_Index > 60, 1, 0))
 
 # Convert to Means Effect Index
 
@@ -337,4 +337,3 @@ full_group$Overall_Index = calculate_mean_effects_index(full_group$Z,subset(full
 
 # Export To CSV
 write.csv(full_group,"indexed_data.csv", row.names = FALSE)
-
